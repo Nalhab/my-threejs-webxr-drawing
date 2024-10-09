@@ -10,10 +10,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('/game', (req, res) => {
-    res.sendFile(path.join(__dirname, 'game', 'game.html'));
-});
-
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
 });
