@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dessin 3D avec Three.js</title>
+    <title>Mon Projet Three.js</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.rawgit.com/immersive-web/webxr/master/dist/webxr-polyfill.js"></script>
-    <style>
-        body { margin: 0; }
-        canvas { display: block; }
-        #start-button { position: absolute; top: 20px; left: 20px; }
-    </style>
 </head>
 <body>
-    <button id="start-button">Lancer le Dessin</button>
-    <script src="draw.js"></script>
+    <h1>Bienvenue dans mon projet Three.js</h1>
+    <button id="goToPage">Aller à l'autre page</button>
+
+    <script>
+        document.getElementById('goToPage').addEventListener('click', function() {
+            window.location.href = '/game';
+        });
+    </script>
+    
+    <button id="actionButton">Cliquez-moi</button>
+
+    <script src="/scripts/index.js"></script>
 </body>
 </html>
