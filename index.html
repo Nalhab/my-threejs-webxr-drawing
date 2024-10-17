@@ -1,20 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-  <title>three_vite</title>
-  <link rel="icon" href="favicon.png">
-  <link rel="stylesheet" href="./main.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebXR Anatomy Pictionary</title>
+  <link rel="stylesheet" href="public/main.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Boogaloo&display=swap" rel="stylesheet">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@v0.163.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@v0.163.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
-
 <body>
-  <div id="container"></div>
-  <!--
-  <script src="./jsm/libs/ammo.wasm.js"></script>
-  -->
- <script type="module" src="./main.js"></script>
+  <header></header>
+  <main>
+    <div class="container">
+      <canvas class="webgl"></canvas>
+    </div>
+    <div id="progress-container">
+      <div id="progress">Loading...</div>
+    </div>
+    <script type="module" src="./main.js"></script>
+  </main>
 </body>
-
 </html>
