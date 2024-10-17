@@ -16,7 +16,11 @@
         "three/addons/renderers/CSS2DRenderer.js": "https://unpkg.com/three@0.134.0/examples/jsm/renderers/CSS2DRenderer.js",
         "three/examples/jsm/controls/OrbitControls.js": "https://unpkg.com/three@0.134.0/examples/jsm/controls/OrbitControls.js",
         "three/examples/jsm/loaders/GLTFLoader.js": "https://unpkg.com/three@0.134.0/examples/jsm/loaders/GLTFLoader.js",
-        "three/examples/jsm/postprocessing/EffectComposer.js": "https://unpkg.com/three@0.134.0/examples/jsm/postprocessing/EffectComposer.js"
+        "three/examples/jsm/postprocessing/EffectComposer.js": "https://unpkg.com/three@0.134.0/examples/jsm/postprocessing/EffectComposer.js",
+        "three/examples/jsm/postprocessing/RenderPass.js": "https://unpkg.com/three@0.134.0/examples/jsm/postprocessing/RenderPass.js",
+        "three/examples/jsm/postprocessing/OutlinePass.js": "https://unpkg.com/three@0.134.0/examples/jsm/postprocessing/OutlinePass.js",
+        "three/examples/jsm/postprocessing/ShaderPass.js": "https://unpkg.com/three@0.134.0/examples/jsm/postprocessing/ShaderPass.js",
+        "three/examples/jsm/shaders/FXAAShader.js": "https://unpkg.com/three@0.134.0/examples/jsm/shaders/FXAAShader.js"
       }
     }
   </script>
@@ -86,7 +90,7 @@
       directionalLight.shadow.mapSize.height = 1024;
       scene.add(directionalLight);
 
-      const spotLight = new THREE.SpotLight(0xffffff, 1.5, 100, Math.PI / 4, 0.5, 1);
+      const spotLight = new THREE.SpotLight(0xffffff, 10, 100, Math.PI / 4, 0.5, 1);
       spotLight.position.set(10, 20, 10);
       spotLight.castShadow = true;
       spotLight.shadow.bias = -0.0001;
