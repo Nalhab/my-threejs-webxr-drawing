@@ -173,7 +173,7 @@
 
         button.addEventListener('click', () => {
           localStorage.setItem('gameMode', 'play');
-          window.location.href = '/public/game.html';
+          window.location.href = 'public/game.html';
         });
 
         const multiDiv = document.createElement('div');
@@ -186,7 +186,7 @@
 
         multi.addEventListener('click', () => {
           localStorage.setItem('gameMode', 'playWithFriends');
-          window.location.href = '/public/game.html';
+          window.location.href = 'public/game.html';
         });
       }, (xhr) => {
         console.log(`loading ${xhr.loaded / xhr.total * 100}%`);
