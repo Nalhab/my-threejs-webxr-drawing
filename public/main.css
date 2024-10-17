@@ -7,7 +7,7 @@ body, html {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(140deg, #3b5d98 20%, #afbcd4 140%); /* Gradient background */
+  background: linear-gradient(140deg, #3b5d98 20%, #afbcd4 140%);
 }
 
 .container {
@@ -35,13 +35,13 @@ body, html {
 }
 
 .label {
-  color: black; /* Set text color to black */
-  font-weight: bold; /* Set font weight to bold */
-  text-transform: uppercase; /* Set text to uppercase */
-  margin-bottom: 1rem; /* Set bottom margin */
+  color: black;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
   font-family: 'Boogaloo', cursive;
   font-size: 3rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add text shadow */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   text-align: center;
 }
 
@@ -54,11 +54,11 @@ body, html {
 }
 
 .text-theme {
-  color: #fff; /* Adjust this color to match your theme */
+  color: #fff;
 }
 
 .mb-4 {
-  margin-bottom: 1.5rem; /* Adjust this value as needed */
+  margin-bottom: 1.5rem;
 }
 
 #progress {
@@ -68,7 +68,7 @@ body, html {
 
 .button-container {
   position: absolute;
-  top: 45%; /* Adjust this value to position the button */
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 10;
@@ -107,15 +107,15 @@ body, html {
 	--background-color-dark: #007d11;
 }
 
-.options-container {
+.multi-container {
   position: absolute;
-  top: 60%; /* Adjust this value to position the button */
+  top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 10;
 }
 
-.options-button {
+.multi-button {
 	--background-color: #0045c6;
 	--background-color-dark: #002365;
 
@@ -133,17 +133,17 @@ body, html {
 	box-shadow: 6px 6px 0 var(--background-color-dark);
 }
 
-.options-button:active {
+.multi-button:active {
 	transform: translateX(2px) translateY(2px);
 	box-shadow: 4px 4px 0 var(--background-color-dark);
 }
 
-.options-button--secondary {
+.multi-button--secondary {
 	--background-color: #FF00DA;
 	--background-color-dark: #840070;
 }
 
-.options-button--tertiary {
+.multi-button--tertiary {
 	--background-color: #19E633;
 	--background-color-dark: #007d11;
 }

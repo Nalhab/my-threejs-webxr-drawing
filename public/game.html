@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Boogaloo&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <title>Three.js - TubePainter et Interactions</title>
     <style>
         body { margin: 0; }
@@ -14,24 +16,168 @@
             display: flex;
             flex-direction: column;
         }
-        #ui button {
-            padding: 10px;
-            margin-bottom: 5px;
+        #top-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+        #ui button, #ui input[type="color"] {
+            margin-bottom: 20px;
             font-size: 16px;
             cursor: pointer;
         }
-        
+        .button-container {
+            position: relative;
+            margin: 5px 0;
+        }
+        .action-button {
+            --background-color: #005aff;
+            --background-color-dark: #002d81;
+
+            display: inline-block;
+            margin: 0 8px;
+            padding: 10px 16px;
+            font-family: 'Boogaloo', cursive;
+            font-size: 24px;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-decoration: none;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            background-color: var(--background-color);
+            box-shadow: 6px 6px 0 var(--background-color-dark);
+            width: 150px;
+            text-align: center;
+        }
+
+        .color {
+            --background-color: #0045c6;
+	        --background-color-dark: #002365;
+        }
+
+        .action-button:active {
+            transform: translateX(2px) translateY(2px);
+            box-shadow: 4px 4px 0 var(--background-color-dark);
+        }
+
+        .action-button--secondary {
+            --background-color: #FF00DA;
+            --background-color-dark: #840070;
+        }
+
+        .action-button--tertiary {
+            --background-color: #19E633;
+            --background-color-dark: #007d11;
+        }
+
+        .action-button[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            padding: 0;
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .action-button[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .action-button[type="color"]::-webkit-color-swatch {
+            border: none;
+        }
+
+        .modal {
+            display: none; /* Masquer par défaut */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4); /* Fond semi-transparent */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            padding-top: 1px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            font-family: 'Boogaloo', cursive;
+            border-radius: 10px/8px;
+        }
+
+        .modal-content p {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #005aff;
+            color: #ffffff;
+            border: none;
+            box-shadow: 4px 4px 0 #002d81;
+            font-family: 'Boogaloo', cursive;
+        }
+
+        .modalText {
+            margin-top: 10px;
+        }
+
+        /* Styles pour le bouton Home */
+        .home-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--background-color);
+            box-shadow: 6px 6px 0 var(--background-color-dark);
+            border: none;
+            cursor: pointer;
+            color: #ffffff;
+            font-size: 24px;
+        }
+
+        .home-button:active {
+            transform: translateX(2px) translateY(2px);
+            box-shadow: 4px 4px 0 var(--background-color-dark);
+        }
     </style>
+    <script>
+        if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+            window.location.href = 'index.html';
+        }
+    </script>
 </head>
 <body>
     <!-- UI pour les boutons -->
     <div id="ui">
-        <button id="placeSphereBtn">Placer une Sphère</button>
-        <button id="visionBtn">Vision mouvement</button>
-        <button id="pageUpButton">PageUp</button>
-        <button id="pageDownButton">PageDown</button>
-        <button id="togglePlans">Toggle plans</button>
-        <input type="color" id="colorPicker" value="#000000">
+        <div id="top-row">
+            <button id="toggleDrawMoveBtn" class="action-button button-container color">Draw mode</button>
+            <input type="color" id="colorPicker" class="action-button button-container" value="#ff0000">
+            <button id="undoBtn" class="action-button button-container" style="width: auto;">Undo</button>
+            <button id="homeBtn" class="home-button action-button button-container" style="width: unset;"><i class="fas fa-home" style="height: 19.333px;"></i></button>
+        </div>
+        <button id="pageUpButton" class="action-button button-container">Next layer (1)</button>
+        <button id="pageDownButton" class="action-button button-container">Previous Layer</button>
+        <button id="toggleLayersBtn" class="action-button button-container">Hide layers</button>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <p id="modalText">Discreetly look at the word to draw.</p>
+            <button id="modalBtn" onclick="event.stopPropagation()">OK</button>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
@@ -45,13 +191,29 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
+        let isModalOpen = false;
+
+        if (localStorage.getItem('gameMode') === 'play') {
+            isModalOpen = true; 
+        }
+
         // Contrôles pour naviguer avec la souris
         let controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enablePan = false;
-        controls.enableRotate = false;  // Désactiver la rotation par défaut
+        controls.enableRotate = true;  // Désactiver la rotation par défaut
         controls.enableZoom = true;
+        controls.mouseButtons = {
+            LEFT: THREE.MOUSE.PAN,    // Utiliser le clic gauche pour le panoramique
+            MIDDLE: THREE.MOUSE.DOLLY, // Utiliser la molette de la souris pour le zoom
+            RIGHT: THREE.MOUSE.ROTATE  // Utiliser le clic droit pour la rotation
+        };
         camera.position.set(0, 60, 100);
         controls.update();
+
+        // Empêcher le menu contextuel par défaut sur le clic droit
+        window.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
 
         let displayPlans = true; 
         let planes = [];
@@ -86,7 +248,7 @@
             planes.push(plane);
         }
         
-        let currentColor = '#000000';
+        let currentColor = '#ff0000';
         // let colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffffff, 0x000000, 0xffa500, 0x800080];  // Couleurs pour les sphères
 
         // Lumières
@@ -102,6 +264,8 @@
         let lastDrawPosition = null; // Dernière position de dessin pour garantir un trait continu
         const minDistance = 1; // Distance minimale entre deux sphères pour le trait continu
 
+        let traces = [];  // Tableau pour stocker les traces
+        let currentTrace = [];  // Trace actuelle
 
         // Fonction pour ajouter une sphère
         function addSphere(position, color) {
@@ -111,6 +275,7 @@
             sphere.position.copy(position);
             scene.add(sphere);
             spheres.push(sphere);  // Ajout de la sphère au tableau des sphères
+            currentTrace.push(sphere);  // Ajout de la sphère au tableau de la trace actuelle
         }
 
         // Gestion des événements pour placer des sphères, peindre, ou se déplacer
@@ -140,7 +305,14 @@
         let controlsEnabled = false;
 
         window.addEventListener('mousedown', (event) => {
-            
+            if (event.target.closest('#ui'))
+                return;
+
+            if (isModalOpen) {
+                isModalOpen = false;
+                return;
+            }
+
             if (!controlsEnabled)
             {
                 if (event.button === 0) {
@@ -163,15 +335,16 @@
         });
 
         window.addEventListener('mousemove', (event) => {
-                drawSphereContinuously(event);  // Dessiner en continu pendant le déplacement
+            drawSphereContinuously(event);  // Dessiner en continu pendant le déplacement
         });
 
-        window.addEventListener('mouseup', () => {
-            if (event.button === 2) { // Relâcher le clic droit
-                controls.enableRotate = false; // Désactiver la rotation
-            }
+        window.addEventListener('mouseup', (event) => {
             isDrawing = false;
             lastDrawPosition = null; // Réinitialiser la dernière position
+            if (event.button === 0 && currentTrace.length > 0) {  // 0 correspond au clic gauche
+                traces.push(currentTrace);
+                currentTrace = [];
+            }
         });
 
         // Fonction d'animation
@@ -199,14 +372,17 @@
 
             if (controlsEnabled) {
                 controls.enablePan = true;
-                controls.enableRotate = true;
             }
             else {
                 controls.enablePan = false;
-                controls.enableRotate = false;
             }
         }
         animate();
+
+        function updateNextLayerButton() {
+            const nextLayerButton = document.getElementById('pageUpButton');
+            nextLayerButton.textContent = `Next layer (${currentPlane + 1})`;
+        }
 
         // Mettre à jour le rendu en cas de redimensionnement de la fenêtre
         window.addEventListener('resize', () => {
@@ -215,16 +391,33 @@
             camera.updateProjectionMatrix();
         });
 
+        document.getElementById('toggleDrawMoveBtn').addEventListener('click', (e) => {
+            const button = e.target;
+
+            if (button.textContent === 'Draw mode') {
+                button.textContent = 'Move mode';
+                // Activer les contrôles de mouvement
+                controlsEnabled = true;
+            } else {
+                button.textContent = 'Draw mode';
+                // Désactiver les contrôles de mouvement
+                controlsEnabled = false;
+            }
+        });
+
+        document.getElementById('toggleLayersBtn').addEventListener('click', (e) => {
+            const button = e.target;
+            if (button.textContent === 'Hide layers') {
+                button.textContent = 'Show layers';
+                displayPlans = false;
+            } else {
+                button.textContent = 'Hide layers';
+                displayPlans = true;
+            }
+        });
+
         document.getElementById('colorPicker').addEventListener('input', (e) => {
             currentColor = e.target.value;
-        });
-
-        document.getElementById('placeSphereBtn').addEventListener('click', () => {
-            controlsEnabled = false;  // Désactiver les contrôles
-        });
-
-        document.getElementById('visionBtn').addEventListener('click', () => {
-            controlsEnabled = true;  // Activer les contrôles
         });
 
         document.getElementById('pageUpButton').addEventListener('click', () => {
@@ -232,16 +425,51 @@
                 addPlane();
             }
             currentPlane++;
+            updateNextLayerButton();
         });
 
         document.getElementById('pageDownButton').addEventListener('click', () => {
             if (currentPlane > 0) {
                 currentPlane--;
             }
+            updateNextLayerButton();
         });
 
-        document.getElementById('togglePlans').addEventListener('click', () => {
-            displayPlans = !displayPlans;
+        document.getElementById('undoBtn').addEventListener('click', () => {
+            if (traces.length > 0) {
+                const lastTrace = traces.pop();
+                lastTrace.forEach(sphere => {
+                    scene.remove(sphere);
+                    spheres = spheres.filter(s => s !== sphere);
+                });
+            }
+        });
+
+        const bodyParts = ["head", "arm", "leg", "hand", "foot", "eye", "ear", "nose", "mouth", "finger"];
+
+        // Fonction pour afficher la fenêtre modale avec un mot aléatoire
+        function showModal() {
+            const modal = document.getElementById('modal');
+            const modalText = document.getElementById('modalText');
+            const randomWord = bodyParts[Math.floor(Math.random() * bodyParts.length)];
+            modalText.textContent = `Secretly look at the word to draw: ${randomWord}`;
+            modal.style.display = 'block';
+
+            const modalBtn = document.getElementById('modalBtn');
+            modalBtn.onclick = function() {
+                modal.style.display = 'none';
+                // L'utilisateur peut maintenant commencer à dessiner
+            };
+        }
+
+        // Vérifier le mode de jeu et afficher la fenêtre modale si nécessaire
+        const gameMode = localStorage.getItem('gameMode');
+        if (gameMode === 'play') {
+            showModal();
+        }
+
+        document.getElementById('homeBtn').addEventListener('click', () => {
+            window.location.href = 'index.html'; // Rediriger vers la page d'accueil
         });
 
         // Désactiver le menu contextuel par défaut (clic droit)

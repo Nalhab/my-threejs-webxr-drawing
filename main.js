@@ -8,7 +8,7 @@ import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // Enable alpha for transparency
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -23,7 +23,7 @@ const labelRenderer = new CSS2DRenderer();
 labelRenderer.setSize(window.innerWidth, window.innerHeight);
 labelRenderer.domElement.style.position = 'absolute';
 labelRenderer.domElement.style.top = '0px';
-labelRenderer.domElement.style.pointerEvents = 'none'; // Ensure the label doesn't interfere with mouse events
+labelRenderer.domElement.style.pointerEvents = 'none';
 document.body.appendChild(labelRenderer.domElement);
 
 const scene = new THREE.Scene();
@@ -34,7 +34,7 @@ camera.position.set(4, 5, 11);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.enablePan = false;
-controls.enableRotate = false; // Disable rotation by click
+controls.enableRotate = false;
 controls.minDistance = 5;
 controls.maxDistance = 20;
 controls.minPolarAngle = 0.5;
@@ -43,7 +43,7 @@ controls.autoRotate = false;
 controls.target = new THREE.Vector3(0, 1, 0);
 controls.update();
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); // Soft white light
+const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
 scene.add(ambientLight);
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -55,7 +55,7 @@ directionalLight.shadow.mapSize.height = 1024;
 scene.add(directionalLight);
 
 const spotLight = new THREE.SpotLight(0xffffff, 1.5, 100, Math.PI / 4, 0.5, 1);
-spotLight.position.set(10, 20, 10); // Adjust the position to better illuminate the heart
+spotLight.position.set(10, 20, 10);
 spotLight.castShadow = true;
 spotLight.shadow.bias = -0.0001;
 spotLight.shadow.mapSize.width = 1024;
@@ -72,12 +72,12 @@ const renderPass = new RenderPass(scene, camera);
 composer.addPass(renderPass);
 
 const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
-outlinePass.edgeStrength = 10.0; // Adjust the strength of the outline
+outlinePass.edgeStrength = 10.0;
 outlinePass.edgeGlow = 0.0;
-outlinePass.edgeThickness = 1.0; // Adjust the thickness of the outline
+outlinePass.edgeThickness = 1.0;
 outlinePass.pulsePeriod = 0;
-outlinePass.visibleEdgeColor.set('#000000'); // Set the color of the outline
-outlinePass.hiddenEdgeColor.set('#000000'); // Set the color of the hidden outline
+outlinePass.visibleEdgeColor.set('#000000');
+outlinePass.hiddenEdgeColor.set('#000000');
 composer.addPass(outlinePass);
 
 const effectFXAA = new ShaderPass(FXAAShader);
@@ -103,22 +103,18 @@ loader.load('scene.gltf', (gltf) => {
   const center = box.getCenter(new THREE.Vector3());
   const size = box.getSize(new THREE.Vector3());
 
-  // Center the model
   mesh.position.x -= center.x;
   mesh.position.y -= center.y * 2;
   mesh.position.z -= center.z;
 
-  // Scale and position the heart
-  mesh.scale.set(2.5, 2.5, 2.5); // Adjust the scale as needed
-  mesh.rotation.set(0, 0, Math.PI / 10); // Rotate the heart (example: 45 degrees on X and Y axes)
+  mesh.scale.set(2.5, 2.5, 2.5);
+  mesh.rotation.set(0, 0, Math.PI / 10);
 
   group.add(mesh);
 
-  // Add the heart to the outline pass
   outlinePass.selectedObjects = [mesh];
 
-  // Adjust camera position to center the heart in the middle of the screen
-  camera.position.set(0, 0, 10); // Adjust the Z value to zoom in/out
+  camera.position.set(0, 0, 10);
   camera.lookAt(mesh.position);
 
   document.getElementById('progress-container').style.display = 'none';
@@ -127,7 +123,7 @@ loader.load('scene.gltf', (gltf) => {
   div.className = 'label text-uppercase fw-bold text-theme mb-4';
   div.textContent = 'Anatomy Pictionary';
   label = new CSS2DObject(div);
-  label.position.set(0, size.y / 2 + 2, 0); // Adjust the position as needed
+  label.position.set(0, size.y / 2 + 2, 0);
   scene.add(label);
 
   // Add a button below the title
@@ -140,17 +136,22 @@ loader.load('scene.gltf', (gltf) => {
   document.body.appendChild(buttonDiv);
 
   button.addEventListener('click', () => {
-    window.location.href = './public/game.html';
+    localStorage.setItem('gameMode', 'play');
+    window.location.href = 'game.html';
   });
 
-  // Add a button below the title
-  const optionsDiv = document.createElement('div');
-  optionsDiv.className = 'options-container';
-  const options = document.createElement('options');
-  options.className = 'options-button';
-  options.textContent = 'PLAY WITH FRIENDS';
-  optionsDiv.appendChild(options);
-  document.body.appendChild(optionsDiv);
+  const multiDiv = document.createElement('div');
+  multiDiv.className = 'multi-container';
+  const multi = document.createElement('multi');
+  multi.className = 'multi-button';
+  multi.textContent = 'PLAY WITH FRIENDS';
+  multiDiv.appendChild(multi);
+  document.body.appendChild(multiDiv);
+
+  multi.addEventListener('click', () => {
+    localStorage.setItem('gameMode', 'playWithFriends');
+    window.location.href = 'game.html';
+  });
 }, (xhr) => {
   console.log(`loading ${xhr.loaded / xhr.total * 100}%`);
 }, (error) => {
@@ -165,9 +166,6 @@ window.addEventListener('resize', () => {
   labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-
-
-// Disable zoom with mouse wheel
 controls.enableZoom = false;
 
 document.addEventListener("mousemove", onDocumentMouseMove);
@@ -220,6 +218,5 @@ function animate() {
   labelRenderer.render(scene, camera);
 }
 
-// Start the animation loop
 tick();
 animate();
