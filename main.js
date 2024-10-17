@@ -139,6 +139,10 @@ loader.load('scene.gltf', (gltf) => {
   buttonDiv.appendChild(button);
   document.body.appendChild(buttonDiv);
 
+  button.addEventListener('click', () => {
+    window.location.href = './public/game.html';
+  });
+
   // Add a button below the title
   const optionsDiv = document.createElement('div');
   optionsDiv.className = 'options-container';
@@ -160,6 +164,8 @@ window.addEventListener('resize', () => {
   composer.setSize(window.innerWidth, window.innerHeight);
   labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+
 
 // Disable zoom with mouse wheel
 controls.enableZoom = false;

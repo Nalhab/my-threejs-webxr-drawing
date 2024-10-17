@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js - TubePainter et Interactions</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        #ui button {
+            padding: 10px;
+            margin-bottom: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+    </style>
+</head>
+<body>
+    <!-- UI pour les boutons -->
+    <div id="ui">
+        <button id="placeSphereBtn">Placer une Sphère</button>
+        <button id="visionBtn">Vision mouvement</button>
+        <button id="pageUpButton">PageUp</button>
+        <button id="pageDownButton">PageDown</button>
+        <button id="togglePlans">Toggle plans</button>
+        <input type="color" id="colorPicker" value="#000000">
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // Étape 1 : Créer la scène, la caméra, et le rendu
+        let scene = new THREE.Scene();
+        let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        let renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Contrôles pour naviguer avec la souris
+        let controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enablePan = false;
+        controls.enableRotate = false;  // Désactiver la rotation par défaut
+        controls.enableZoom = true;
+        camera.position.set(0, 60, 100);
+        controls.update();
+
+        let displayPlans = true; 
+        let planes = [];
+        let spheres = [];  // Tableau pour stocker les sphères
+        let currentPlane = 0;  // Variable pour suivre le plan actuel
+        const geometry = new THREE.PlaneGeometry(100, 100);  // Taille des plans
+        const distanceBetweenPlanes = 1;  // Distance entre chaque plan
+
+        material = new THREE.MeshBasicMaterial({
+                    color: 0x87CEEB,  // Couleur bleue
+                    side: THREE.DoubleSide,
+                    transparent: true,  // Activation de la transparence
+                    opacity: 0.9  // Opacité élevée pour le premier plan
+                });
+        const plane = new THREE.Mesh(geometry, material);
+        plane.position.y = currentPlane * distanceBetweenPlanes;
+        plane.rotation.x = Math.PI / 2; // Orienter le plan horizontalement
+        scene.add(plane);
+        planes.push(plane);
+
+        function addPlane() {
+            const material = new THREE.MeshBasicMaterial({
+                color: 0x87CEEB,  // Couleur bleue
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.15
+            });
+            const plane = new THREE.Mesh(geometry, material);
+            plane.position.y = currentPlane * distanceBetweenPlanes;
+            plane.rotation.x = Math.PI / 2; // Orienter le plan horizontalement
+            scene.add(plane);
+            planes.push(plane);
+        }
+        
+        let currentColor = '#000000';
+        // let colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffffff, 0x000000, 0xffa500, 0x800080];  // Couleurs pour les sphères
+
+        // Lumières
+        let ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        let directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 10, 7.5);
+        scene.add(directionalLight);
+
+        // Variable pour suivre si on dessine
+        let isDrawing = false;
+        let lastDrawPosition = null; // Dernière position de dessin pour garantir un trait continu
+        const minDistance = 1; // Distance minimale entre deux sphères pour le trait continu
+
+
+        // Fonction pour ajouter une sphère
+        function addSphere(position, color) {
+            let sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
+            let sphereMaterial = new THREE.MeshStandardMaterial({ color: color });
+            let sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            sphere.position.copy(position);
+            scene.add(sphere);
+            spheres.push(sphere);  // Ajout de la sphère au tableau des sphères
+        }
+
+        // Gestion des événements pour placer des sphères, peindre, ou se déplacer
+
+        function drawSphereContinuously(event) {
+            if (!isDrawing) return;
+
+            let mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            let raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+
+            let intersects = raycaster.intersectObject(planes[currentPlane]);
+            if (intersects.length > 0) {
+                let intersectPoint = intersects[0].point;
+
+                if (!lastDrawPosition || lastDrawPosition.distanceTo(intersectPoint) > minDistance) {
+                    addSphere(intersectPoint, currentColor);
+                    lastDrawPosition = intersectPoint.clone(); // Mise à jour de la dernière position
+                }
+            }
+        }
+
+        // Variable pour suivre si les contrôles sont activés
+        let controlsEnabled = false;
+
+        window.addEventListener('mousedown', (event) => {
+            
+            if (!controlsEnabled)
+            {
+                if (event.button === 0) {
+                    // let mouse = new THREE.Vector2();
+                    // mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                    // mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                    // let raycaster = new THREE.Raycaster();
+                    // raycaster.setFromCamera(mouse, camera);
+
+                    // let intersects = raycaster.intersectObject(planes[currentPlane]);
+                    // if (intersects.length > 0) {
+                    //     let intersectPoint = intersects[0].point;
+                    //     addSphere(intersectPoint, currentColor);
+                    // }
+                    isDrawing = true;
+                    drawSphereContinuously(event);
+                }
+            }
+        });
+
+        window.addEventListener('mousemove', (event) => {
+                drawSphereContinuously(event);  // Dessiner en continu pendant le déplacement
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (event.button === 2) { // Relâcher le clic droit
+                controls.enableRotate = false; // Désactiver la rotation
+            }
+            isDrawing = false;
+            lastDrawPosition = null; // Réinitialiser la dernière position
+        });
+
+        // Fonction d'animation
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+            
+            if (displayPlans) {
+                // Mettre à jour la visibilité des plans et des sphères
+                planes.forEach((plane, index) => {
+                    plane.visible = index <= currentPlane;  // Rendre le plan visible seulement s'il est <= currentPlane
+                });
+            }
+            else {
+                planes.forEach(plane => {
+                    plane.visible = false;  // Cacher tous les plans
+                });
+            }
+
+            spheres.forEach(sphere => {
+                const planeIndex = Math.floor((sphere.position.y + 0.3) / distanceBetweenPlanes);
+                sphere.visible = planeIndex <= currentPlane; 
+            });
+
+            if (controlsEnabled) {
+                controls.enablePan = true;
+                controls.enableRotate = true;
+            }
+            else {
+                controls.enablePan = false;
+                controls.enableRotate = false;
+            }
+        }
+        animate();
+
+        // Mettre à jour le rendu en cas de redimensionnement de la fenêtre
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        document.getElementById('colorPicker').addEventListener('input', (e) => {
+            currentColor = e.target.value;
+        });
+
+        document.getElementById('placeSphereBtn').addEventListener('click', () => {
+            controlsEnabled = false;  // Désactiver les contrôles
+        });
+
+        document.getElementById('visionBtn').addEventListener('click', () => {
+            controlsEnabled = true;  // Activer les contrôles
+        });
+
+        document.getElementById('pageUpButton').addEventListener('click', () => {
+            if (currentPlane >= planes.length - 1) {
+                addPlane();
+            }
+            currentPlane++;
+        });
+
+        document.getElementById('pageDownButton').addEventListener('click', () => {
+            if (currentPlane > 0) {
+                currentPlane--;
+            }
+        });
+
+        document.getElementById('togglePlans').addEventListener('click', () => {
+            displayPlans = !displayPlans;
+        });
+
+        // Désactiver le menu contextuel par défaut (clic droit)
+        window.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+    </script>
+</body>
+</html>
