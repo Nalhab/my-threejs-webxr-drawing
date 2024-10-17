@@ -1,15 +1,26 @@
 {
-  "name": "my-threejs-webxr-drawing",
-  "version": "1.0.0",
-  "description": "",
+  "name": "three_vite",
+  "version": "0.0.4",
+  "author": "fdoganis",
+  "license": "MIT",
+  "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "purge": "npm run clean && rm -rf node_modules",
+    "serve": "http-server dist",
+    "cloud": "cloudflared --url http://localhost:5173/"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "devDependencies": {
+    "@types/three": "^0.169.0",
+    "http-server": "^14.1.1",
+    "vite": "^5.4.1",
+    "vite-plugin-glsl": "^1.3.0",
+    "vite-plugin-static-copy": "^1.0.6"
+  },
   "dependencies": {
-    "express": "^4.21.1",
     "three": "^0.169.0"
   }
 }
