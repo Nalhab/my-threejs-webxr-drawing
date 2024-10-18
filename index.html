@@ -33,6 +33,17 @@
     <div id="progress-container">
       <div id="progress" style="font-family: Boogaloo;">Loading...</div>
     </div>
+    <div style="padding-left: 500px;">
+      <button id="playWithFriendsBtn">Play with Friends</button>
+      <div id="roomContainer" style="display: none;">
+        <h2>Rooms</h2>
+        <ul id="roomList"></ul>
+        <input type="text" id="roomName" placeholder="Room Name">
+        <button id="createRoomBtn">Create Room</button>
+        <button id="startGameBtn" style="display: none;">Start Game</button>
+      </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
     <script type="module">
       import * as THREE from 'three';
       import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
@@ -162,7 +173,6 @@
         label.position.set(0, size.y / 2 + 2, 0);
         scene.add(label);
 
-        // Add a button below the title
         const buttonDiv = document.createElement('div');
         buttonDiv.className = 'button-container';
         const button = document.createElement('button');
@@ -284,6 +294,93 @@
 
       tick();
       animate();
+
+      const socket = io();
+      let currentRoom = null;
+      let currentRole = 'Guesser';
+      let playerId = null;
+
+      document.getElementById('playWithFriendsBtn').addEventListener('click', () => {
+        document.getElementById('roomContainer').style.display = 'block';
+      });
+
+      async function generateUniqueId() {
+        let id = '_' + Math.random().toString(36).substr(2, 9);
+
+        const playersIds = await new Promise((resolve) => {
+          socket.emit('getPlayersIds');
+          socket.on('playersIds', (playersIds) => {
+            resolve(playersIds);
+          });
+        });
+
+        while (playersIds.includes(id)) {
+          id = '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        return id;
+      }
+
+      (async () => {
+        playerId = await generateUniqueId();
+
+        socket.emit('storePlayerId', playerId);
+
+        document.getElementById('createRoomBtn').addEventListener('click', () => {
+          const roomName = document.getElementById('roomName').value;
+          socket.emit('createRoom', { roomName, playerId });
+          currentRoom = roomName;
+        });
+
+        document.getElementById('startGameBtn').addEventListener('click', () => {
+          if (currentRoom && currentRole === 'Drawer') {
+            socket.emit('startGame', currentRoom);
+          }
+        });
+
+        socket.on('roomsList', (rooms) => {
+          const roomList = document.getElementById('roomList');
+          roomList.innerHTML = '';
+          rooms.forEach((room) => {
+            const li = document.createElement('li');
+            li.textContent = room;
+            li.style.cursor = 'pointer';
+            li.addEventListener('click', () => {
+              socket.emit('joinRoom', { roomName: room, playerId });
+              currentRoom = room;
+            });
+            roomList.appendChild(li);
+          });
+        });
+
+        socket.on('roomData', (room) => {
+          const roomList = document.getElementById('roomList');
+          roomList.innerHTML = '';
+          room.forEach((player) => {
+            const li = document.createElement('li');
+            li.textContent = player.id + (player.role === 'Drawer' ? ' (Drawer)' : ' (Guesser)');
+            roomList.appendChild(li);
+          });
+        });
+
+        socket.on('updateRole', (role) => {
+          currentRole = role;
+          if (role === 'Drawer') {
+            document.getElementById('startGameBtn').style.display = 'block';
+          } else {
+            document.getElementById('startGameBtn').style.display = 'none';
+          }
+        });
+
+        socket.on('startGame', (room) => {
+          socket.emit('joinGame', { room, playerId, role: currentRole });
+          window.location.href = `public/game.html?room=${currentRoom}&playerId=${playerId}`;
+        });
+
+        socket.on('roomFull', () => {
+          alert('Room is full');
+        });
+      })();
     </script>
   </main>
 </body>

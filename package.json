@@ -21,6 +21,8 @@
     "vite-plugin-static-copy": "^1.0.6"
   },
   "dependencies": {
+    "express": "^4.21.1",
+    "socket.io": "^4.8.0",
     "three": "^0.169.0"
   }
 }
