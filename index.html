@@ -11,16 +11,16 @@
   <script type="importmap">
     {
       "imports": {
-        "three": "https://unpkg.com/three@0.134.0/build/three.module.js",
-        "three/examples/jsm/": "https://unpkg.com/three@0.134.0/examples/jsm/",
-        "three/addons/renderers/CSS2DRenderer.js": "https://unpkg.com/three@0.134.0/examples/jsm/renderers/CSS2DRenderer.js",
-        "three/examples/jsm/controls/OrbitControls.js": "https://unpkg.com/three@0.134.0/examples/jsm/controls/OrbitControls.js",
-        "three/examples/jsm/loaders/GLTFLoader.js": "https://unpkg.com/three@0.134.0/examples/jsm/loaders/GLTFLoader.js",
-        "three/examples/jsm/postprocessing/EffectComposer.js": "https://unpkg.com/three@0.134.0/examples/jsm/postprocessing/EffectComposer.js",
-        "three/examples/jsm/postprocessing/RenderPass.js": "https://unpkg.com/three@0.134.0/examples/jsm/postprocessing/RenderPass.js",
-        "three/examples/jsm/postprocessing/OutlinePass.js": "https://unpkg.com/three@0.134.0/examples/jsm/postprocessing/OutlinePass.js",
-        "three/examples/jsm/postprocessing/ShaderPass.js": "https://unpkg.com/three@0.134.0/examples/jsm/postprocessing/ShaderPass.js",
-        "three/examples/jsm/shaders/FXAAShader.js": "https://unpkg.com/three@0.134.0/examples/jsm/shaders/FXAAShader.js"
+        "three": "/node_modules/three/build/three.module.js",
+        "three/examples/jsm/": "/node_modules/three/examples/jsm/",
+        "three/addons/renderers/CSS2DRenderer.js": "/node_modules/three/examples/jsm/renderers/CSS2DRenderer.js",
+        "three/examples/jsm/controls/OrbitControls.js": "/node_modules/three/examples/jsm/controls/OrbitControls.js",
+        "three/examples/jsm/loaders/GLTFLoader.js": "/node_modules/three/examples/jsm/loaders/GLTFLoader.js",
+        "three/examples/jsm/postprocessing/EffectComposer.js": "/node_modules/three/examples/jsm/postprocessing/EffectComposer.js",
+        "three/examples/jsm/postprocessing/RenderPass.js": "/node_modules/three/examples/jsm/postprocessing/RenderPass.js",
+        "three/examples/jsm/postprocessing/OutlinePass.js": "/node_modules/three/examples/jsm/postprocessing/OutlinePass.js",
+        "three/examples/jsm/postprocessing/ShaderPass.js": "/node_modules/three/examples/jsm/postprocessing/ShaderPass.js",
+        "three/examples/jsm/shaders/FXAAShader.js": "/node_modules/three/examples/jsm/shaders/FXAAShader.js"
       }
     }
   </script>
@@ -172,8 +172,7 @@
         document.body.appendChild(buttonDiv);
 
         button.addEventListener('click', () => {
-          localStorage.setItem('gameMode', 'play');
-          window.location.href = 'public/game.html';
+          window.location.href = 'public/game.html?mode=solo';
         });
 
         const multiDiv = document.createElement('div');
@@ -187,6 +186,35 @@
         multi.addEventListener('click', () => {
           localStorage.setItem('gameMode', 'playWithFriends');
           window.location.href = 'public/game.html';
+        });
+
+        const howToPlayBtn = document.createElement('div');
+        howToPlayBtn.className = 'howtoplay-container';
+        const howToPlay = document.createElement('howtoplay');
+        howToPlay.className = 'howtoplay-button';
+        howToPlay.textContent = 'HOW TO PLAY';
+        howToPlayBtn.id = 'howtoplayBtn';
+        howToPlayBtn.appendChild(howToPlay);
+        const howToPlayModal = document.createElement('div');
+        howToPlayModal.className = 'modal';
+        howToPlayModal.id = 'howToPlayModal';
+        howToPlayModal.innerHTML = `
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>How to Play</h2>
+            <p><strong>Play (Solo):</strong> In this mode, you will be given a random body part to draw. Make sure to look at the word discreetly and start drawing!</p>
+            <p><strong>Play with Friends:</strong> In this mode, you can play with your friends. One person will be given a word to draw, and others will guess what it is.</p>
+          </div>
+        `;
+        document.body.appendChild(howToPlayBtn);
+        document.body.appendChild(howToPlayModal);
+
+        howToPlayBtn.addEventListener('click', () => {
+          howToPlayModal.style.display = 'block';
+        });
+
+        document.getElementsByClassName('close')[0].addEventListener('click', () => {
+          howToPlayModal.style.display = 'none';
         });
       }, (xhr) => {
         console.log(`loading ${xhr.loaded / xhr.total * 100}%`);

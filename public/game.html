@@ -193,8 +193,11 @@
 
         let isModalOpen = false;
 
-        if (localStorage.getItem('gameMode') === 'play') {
-            isModalOpen = true; 
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+
+        if (mode === 'solo') {
+            isModalOpen = true;
         }
 
         // Contrôles pour naviguer avec la souris
@@ -242,7 +245,7 @@
                 opacity: 0.15
             });
             const plane = new THREE.Mesh(geometry, material);
-            plane.position.y = currentPlane * distanceBetweenPlanes;
+            plane.position.y = (currentPlane + 1) * distanceBetweenPlanes;
             plane.rotation.x = Math.PI / 2; // Orienter le plan horizontalement
             scene.add(plane);
             planes.push(plane);
@@ -462,9 +465,7 @@
             };
         }
 
-        // Vérifier le mode de jeu et afficher la fenêtre modale si nécessaire
-        const gameMode = localStorage.getItem('gameMode');
-        if (gameMode === 'play') {
+        if (mode === 'solo') {
             showModal();
         }
 
