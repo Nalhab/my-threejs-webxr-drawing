@@ -40,7 +40,8 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Nathan - [Your Email](mailto:nathan.labernardiere@epita.fr)
-Mathieu - [Your Email](mailto:mathieu.cimolai@epita.fr)
+Nathan - [Email](mailto:nathan.labernardiere@epita.fr)
+
+Mathieu - [Email](mailto:mathieu.cimolai@epita.fr)
 
 Project Link: [GitHub Repository](https://github.com/your-username/my-threejs-webxr-drawing)
