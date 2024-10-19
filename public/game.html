@@ -160,7 +160,6 @@
     </script>
 </head>
 <body>
-    <!-- UI pour les boutons -->
     <div id="ui">
         <div id="top-row">
             <button id="toggleDrawMoveBtn" class="action-button button-container color">Draw mode</button>
@@ -192,33 +191,35 @@
         let playerRole = null;
         let isDrawer = false;
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+
         function getRoomData(room) {
             return new Promise((resolve, reject) => {
-            socket.emit('getRoomData', room);
-            socket.on('roomData', (roomData) => {
-                console.log(roomData);
-                const player = roomData.players.find(p => p.id === playerId);
-                if (player) {
-                playerRole = player.role;
-                isDrawer = playerRole === 'Drawer';
-                resolve({ playerRole, isDrawer });
-                } else {
-                alert('Player not found in room. Redirecting to home page.');
-                window.location.href = '../index.html';
-                reject('Player not found');
+                if (mode && mode === 'solo') {
+                    resolve({ playerRole: 'Drawer', isDrawer: true });
+                    return;
                 }
-            });
+
+                socket.emit('joinGame', { roomName: room, playerId: playerId });
+
+                socket.emit('getRoomData', room);
+                socket.on('roomData', (roomData) => {
+                    const player = roomData.players.find(p => p.id === playerId);
+                    if (player) {
+                    playerRole = player.role;
+                    isDrawer = playerRole === 'Drawer';
+                    resolve({ playerRole, isDrawer });
+                    } else {
+                    alert('Player not found in room. Redirecting to home page.');
+                    window.location.href = '../index.html';
+                    reject('Player not found');
+                    }
+                });
             });
         }
 
-        // Utiliser la promesse pour attendre les données de la salle
         getRoomData(room).then(({ playerRole, isDrawer }) => {
-            if (!playerRole) {
-                alert('Player not found in room. Redirecting to home page.');
-                window.location.href = '../index.html';
-            }
-
-            // Étape 1 : Créer la scène, la caméra, et le rendu
             let scene = new THREE.Scene();
             let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             let renderer = new THREE.WebGLRenderer();
@@ -230,65 +231,61 @@
             const urlParams = new URLSearchParams(window.location.search);
             const mode = urlParams.get('mode');
 
-            if (mode === 'solo') {
+            if (mode === 'solo' || isDrawer) {
                 isModalOpen = true;
             }
 
-            // Contrôles pour naviguer avec la souris
             let controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enablePan = false;
-            controls.enableRotate = true;  // Désactiver la rotation par défaut
+            controls.enableRotate = true;
             controls.enableZoom = true;
             controls.mouseButtons = {
-                LEFT: THREE.MOUSE.PAN,    // Utiliser le clic gauche pour le panoramique
-                MIDDLE: THREE.MOUSE.DOLLY, // Utiliser la molette de la souris pour le zoom
-                RIGHT: THREE.MOUSE.ROTATE  // Utiliser le clic droit pour la rotation
+                LEFT: THREE.MOUSE.PAN,
+                MIDDLE: THREE.MOUSE.DOLLY,
+                RIGHT: THREE.MOUSE.ROTATE
             };
             camera.position.set(0, 60, 100);
             controls.update();
 
-            // Empêcher le menu contextuel par défaut sur le clic droit
             window.addEventListener('contextmenu', (event) => {
                 event.preventDefault();
             });
 
             let displayPlans = true; 
             let planes = [];
-            let spheres = [];  // Tableau pour stocker les sphères
-            let currentPlane = 0;  // Variable pour suivre le plan actuel
-            const geometry = new THREE.PlaneGeometry(100, 100);  // Taille des plans
-            const distanceBetweenPlanes = 1;  // Distance entre chaque plan
+            let spheres = [];
+            let currentPlane = 0;
+            const geometry = new THREE.PlaneGeometry(100, 100);
+            const distanceBetweenPlanes = 1;
 
             material = new THREE.MeshBasicMaterial({
-                        color: 0x87CEEB,  // Couleur bleue
+                        color: 0x87CEEB,
                         side: THREE.DoubleSide,
-                        transparent: true,  // Activation de la transparence
-                        opacity: 0.9  // Opacité élevée pour le premier plan
+                        transparent: true,
+                        opacity: 0.9
                     });
             const plane = new THREE.Mesh(geometry, material);
             plane.position.y = currentPlane * distanceBetweenPlanes;
-            plane.rotation.x = Math.PI / 2; // Orienter le plan horizontalement
+            plane.rotation.x = Math.PI / 2;
             scene.add(plane);
             planes.push(plane);
 
             function addPlane() {
                 const material = new THREE.MeshBasicMaterial({
-                    color: 0x87CEEB,  // Couleur bleue
+                    color: 0x87CEEB,
                     side: THREE.DoubleSide,
                     transparent: true,
                     opacity: 0.15
                 });
                 const plane = new THREE.Mesh(geometry, material);
                 plane.position.y = (currentPlane + 1) * distanceBetweenPlanes;
-                plane.rotation.x = Math.PI / 2; // Orienter le plan horizontalement
+                plane.rotation.x = Math.PI / 2;
                 scene.add(plane);
                 planes.push(plane);
             }
             
             let currentColor = '#ff0000';
-            // let colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffffff, 0x000000, 0xffa500, 0x800080];  // Couleurs pour les sphères
 
-            // Lumières
             let ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
             scene.add(ambientLight);
 
@@ -296,26 +293,23 @@
             directionalLight.position.set(5, 10, 7.5);
             scene.add(directionalLight);
 
-            // Variable pour suivre si on dessine
             let isDrawing = false;
-            let lastDrawPosition = null; // Dernière position de dessin pour garantir un trait continu
-            const minDistance = 1; // Distance minimale entre deux sphères pour le trait continu
+            let lastDrawPosition = null;
+            const minDistance = 1;
 
-            let traces = [];  // Tableau pour stocker les traces
-            let currentTrace = [];  // Trace actuelle
+            let traces = [];
+            let currentTrace = [];
 
-            // Fonction pour ajouter une sphère
             function addSphere(position, color) {
                 let sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
                 let sphereMaterial = new THREE.MeshStandardMaterial({ color: color });
                 let sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
                 sphere.position.copy(position);
                 scene.add(sphere);
-                spheres.push(sphere);  // Ajout de la sphère au tableau des sphères
-                currentTrace.push(sphere);  // Ajout de la sphère au tableau de la trace actuelle
+                spheres.push(sphere);
+                currentTrace.push(sphere);
+                return sphere;
             }
-
-            // Gestion des événements pour placer des sphères, peindre, ou se déplacer
 
             function drawSphereContinuously(event) {
                 if (!isDrawing) return;
@@ -333,72 +327,77 @@
 
                     if (!lastDrawPosition || lastDrawPosition.distanceTo(intersectPoint) > minDistance) {
                         addSphere(intersectPoint, currentColor);
-                        lastDrawPosition = intersectPoint.clone(); // Mise à jour de la dernière position
+                        if (isDrawer && mode !== 'solo') {
+                            socket.emit('draw', { roomName: room, position: intersectPoint, color: currentColor, layer: currentPlane });
+                        }
+                        lastDrawPosition = intersectPoint.clone();
                     }
                 }
             }
 
-            // Variable pour suivre si les contrôles sont activés
             let controlsEnabled = false;
 
-            window.addEventListener('mousedown', (event) => {
-                if (event.target.closest('#ui'))
-                    return;
+            if (isDrawer || mode === 'solo') {
+                window.addEventListener('mousedown', (event) => {
+                    if (event.target.closest('#ui'))
+                        return;
 
-                if (isModalOpen) {
-                    isModalOpen = false;
-                    return;
-                }
-
-                if (!controlsEnabled)
-                {
-                    if (event.button === 0) {
-                        // let mouse = new THREE.Vector2();
-                        // mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-                        // mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-                        // let raycaster = new THREE.Raycaster();
-                        // raycaster.setFromCamera(mouse, camera);
-
-                        // let intersects = raycaster.intersectObject(planes[currentPlane]);
-                        // if (intersects.length > 0) {
-                        //     let intersectPoint = intersects[0].point;
-                        //     addSphere(intersectPoint, currentColor);
-                        // }
-                        isDrawing = true;
-                        drawSphereContinuously(event);
+                    if (isModalOpen) {
+                        isModalOpen = false;
+                        return;
                     }
-                }
-            });
 
-            window.addEventListener('mousemove', (event) => {
-                drawSphereContinuously(event);  // Dessiner en continu pendant le déplacement
-            });
+                    if (!controlsEnabled)
+                    {
+                        if (event.button === 0) {
+                            // let mouse = new THREE.Vector2();
+                            // mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                            // mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                            // let raycaster = new THREE.Raycaster();
+                            // raycaster.setFromCamera(mouse, camera);
+
+                            // let intersects = raycaster.intersectObject(planes[currentPlane]);
+                            // if (intersects.length > 0) {
+                            //     let intersectPoint = intersects[0].point;
+                            //     addSphere(intersectPoint, currentColor);
+                            // }
+                            isDrawing = true;
+                            drawSphereContinuously(event);
+                        }
+                    }
+                });
+            }
+
+            if (isDrawer || mode === 'solo') {
+                window.addEventListener('mousemove', (event) => {
+                    drawSphereContinuously(event);
+                });
+            }
 
             window.addEventListener('mouseup', (event) => {
                 isDrawing = false;
-                lastDrawPosition = null; // Réinitialiser la dernière position
-                if (event.button === 0 && currentTrace.length > 0) {  // 0 correspond au clic gauche
+                lastDrawPosition = null;
+                if (event.button === 0 && currentTrace.length > 0) {
                     traces.push(currentTrace);
+                    socket.emit('addTrace', { roomName: room });
                     currentTrace = [];
                 }
             });
 
-            // Fonction d'animation
             function animate() {
                 requestAnimationFrame(animate);
                 controls.update();
                 renderer.render(scene, camera);
                 
                 if (displayPlans) {
-                    // Mettre à jour la visibilité des plans et des sphères
                     planes.forEach((plane, index) => {
-                        plane.visible = index <= currentPlane;  // Rendre le plan visible seulement s'il est <= currentPlane
+                        plane.visible = index <= currentPlane;
                     });
                 }
                 else {
                     planes.forEach(plane => {
-                        plane.visible = false;  // Cacher tous les plans
+                        plane.visible = false;
                     });
                 }
 
@@ -421,7 +420,6 @@
                 nextLayerButton.textContent = `Next layer (${currentPlane + 1})`;
             }
 
-            // Mettre à jour le rendu en cas de redimensionnement de la fenêtre
             window.addEventListener('resize', () => {
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 camera.aspect = window.innerWidth / window.innerHeight;
@@ -433,11 +431,9 @@
 
                 if (button.textContent === 'Draw mode') {
                     button.textContent = 'Move mode';
-                    // Activer les contrôles de mouvement
                     controlsEnabled = true;
                 } else {
                     button.textContent = 'Draw mode';
-                    // Désactiver les contrôles de mouvement
                     controlsEnabled = false;
                 }
             });
@@ -461,6 +457,8 @@
                 if (currentPlane >= planes.length - 1) {
                     addPlane();
                 }
+
+                socket.emit('nextLayer', { roomName: room });
                 currentPlane++;
                 updateNextLayerButton();
             });
@@ -469,6 +467,8 @@
                 if (currentPlane > 0) {
                     currentPlane--;
                 }
+
+                socket.emit('previousLayer', { roomName: room });
                 updateNextLayerButton();
             });
 
@@ -479,22 +479,21 @@
                         scene.remove(sphere);
                         spheres = spheres.filter(s => s !== sphere);
                     });
+                    socket.emit('undo', { roomName: room, trace: lastTrace });
                 }
             });
 
-            // Logique pour le multijoueur
             if (!isDrawer) {
                 document.getElementById('toggleDrawMoveBtn').style.display = 'none';
                 document.getElementById('colorPicker').style.display = 'none';
                 document.getElementById('undoBtn').style.display = 'none';
                 document.getElementById('pageUpButton').style.display = 'none';
                 document.getElementById('pageDownButton').style.display = 'none';
-                document.getElementById('toggleLayersBtn').style.display = 'none';
+                controlsEnabled = true;
             }
 
             const bodyParts = ["head", "arm", "leg", "hand", "foot", "eye", "ear", "nose", "mouth", "finger"];
 
-            // Fonction pour afficher la fenêtre modale avec un mot aléatoire
             function showModal() {
                 const modal = document.getElementById('modal');
                 const modalText = document.getElementById('modalText');
@@ -505,7 +504,6 @@
                 const modalBtn = document.getElementById('modalBtn');
                 modalBtn.onclick = function() {
                     modal.style.display = 'none';
-                    // L'utilisateur peut maintenant commencer à dessiner
                 };
             }
 
@@ -513,25 +511,55 @@
                 showModal();
             }
 
-            if (isDrawer) {
-                document.getElementById('toggleDrawMoveBtn').addEventListener('click', () => {
-                    // Logique pour dessiner
-                    const position = new THREE.Vector3(Math.random() * 10, Math.random() * 10, Math.random() * 10);
-                    const color = document.getElementById('colorPicker').value;
-                    addSphere(position, color);
-                    socket.emit('draw', { position, color });
-                    });
+            if (mode !== 'solo') {
+                socket.on('gameEnded', () => {
+                    alert('Someone left. Redirecting to home page.');
+                    window.location.href = '../index.html';
+                });
             }
 
-            socket.on('draw', ({ position, color }) => {
-                addSphere(new THREE.Vector3(position.x, position.y, position.z), color);
-            });
+            if (mode !== 'solo' && !isDrawer) {
+                socket.on('draw', ({position: position, color: color, layer: layer }) => {
+                    const sphere = addSphere(new THREE.Vector3(position.x, position.y, position.z), color);
+                });
+
+                socket.on('nextLayer', () => {
+                    if (currentPlane >= planes.length - 1) {
+                        addPlane();
+                    }
+
+                    currentPlane++;
+                    updateNextLayerButton();
+                });
+
+                socket.on('previousLayer', () => {
+                    if (currentPlane > 0) {
+                        currentPlane--;
+                    }
+
+                    updateNextLayerButton();
+                });
+
+                socket.on('addTrace', () => {
+                    traces.push(currentTrace);
+                    currentTrace = [];
+                });
+
+                socket.on('undo', () => {
+                    if (traces.length > 0) {
+                        const lastTrace = traces.pop();
+                        lastTrace.forEach(sphere => {
+                            scene.remove(sphere);
+                            spheres = spheres.filter(s => s !== sphere);
+                        });
+                    }
+                });
+            }
 
             document.getElementById('homeBtn').addEventListener('click', () => {
-                window.location.href = '../index.html'; // Rediriger vers la page d'accueil
+                window.location.href = '../index.html';
             });
 
-            // Désactiver le menu contextuel par défaut (clic droit)
             window.addEventListener('contextmenu', (event) => {
                 event.preventDefault();
             });

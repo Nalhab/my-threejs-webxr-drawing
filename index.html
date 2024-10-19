@@ -33,16 +33,6 @@
     <div id="progress-container">
       <div id="progress" style="font-family: Boogaloo;">Loading...</div>
     </div>
-    <div style="padding-left: 500px;">
-      <button id="playWithFriendsBtn">Play with Friends</button>
-      <div id="roomContainer" style="display: none;">
-        <h2>Rooms</h2>
-        <ul id="roomList"></ul>
-        <input type="text" id="roomName" placeholder="Room Name">
-        <button id="createRoomBtn">Create Room</button>
-        <button id="startGameBtn" style="display: none;">Start Game</button>
-      </div>
-    </div>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script type="module">
       import * as THREE from 'three';
@@ -54,6 +44,8 @@
       import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass.js';
       import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
       import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
+
+      let inRoom = false;
 
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -185,17 +177,47 @@
           window.location.href = 'public/game.html?mode=solo';
         });
 
+        const roomslist = document.createElement('div');
+        roomslist.className = 'roomslist-container';
+        roomslist.id = 'roomslist';
+        roomslist.innerHTML = `
+          <div id="room-container" class="room-container" style="display: none;">
+            <span class="closeMulti">&times;</span>
+            <h2>Available rooms</h2>
+            <ul id="roomList"></ul>
+            <input type="text" id="roomName" placeholder="Room Name">
+            <button id="createRoomBtn" class="createRoomBtn">Create Room</button>
+            <div id="btn-container" class="btn-container" style="display: none;">
+              <button id="startGameBtn" class="startGameBtn">Start Game</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(roomslist);
+
         const multiDiv = document.createElement('div');
         multiDiv.className = 'multi-container';
+        multiDiv.id = 'playWithFriendsBtn';
         const multi = document.createElement('multi');
         multi.className = 'multi-button';
         multi.textContent = 'PLAY WITH FRIENDS';
         multiDiv.appendChild(multi);
         document.body.appendChild(multiDiv);
 
-        multi.addEventListener('click', () => {
-          localStorage.setItem('gameMode', 'playWithFriends');
-          window.location.href = 'public/game.html';
+        multiDiv.addEventListener('click', () => {
+          document.getElementById('room-container').style.display = 'block';
+        });
+
+        document.getElementById('createRoomBtn').addEventListener('click', () => {
+          const roomName = document.getElementById('roomName').value;
+          socket.emit('createRoom', { roomName, playerId });
+          currentRoom = roomName;
+          inRoom = true;
+        });
+
+        document.getElementById('startGameBtn').addEventListener('click', () => {
+          if (currentRoom && currentRole === 'Drawer') {
+            socket.emit('startGame', currentRoom);
+          }
         });
 
         const howToPlayBtn = document.createElement('div');
@@ -212,6 +234,7 @@
           <div class="modal-content">
             <span class="close">&times;</span>
             <h2>How to Play</h2>
+            <p>WebXR Anatomy Pictionary is a game where you can draw different body parts (only 10 for demonstration). You can play in two modes:</p>
             <p><strong>Play (Solo):</strong> In this mode, you will be given a random body part to draw. Make sure to look at the word discreetly and start drawing!</p>
             <p><strong>Play with Friends:</strong> In this mode, you can play with your friends. One person will be given a word to draw, and others will guess what it is.</p>
           </div>
@@ -225,6 +248,15 @@
 
         document.getElementsByClassName('close')[0].addEventListener('click', () => {
           howToPlayModal.style.display = 'none';
+        });
+
+        multiDiv.addEventListener('click', () => {
+          roomslist.style.display = 'block';
+        });
+
+        document.getElementsByClassName('closeMulti')[0].addEventListener('click', () => {
+          roomslist.style.display = 'none';
+          inRoom = false;
         });
       }, (xhr) => {
         console.log(`loading ${xhr.loaded / xhr.total * 100}%`);
@@ -300,10 +332,6 @@
       let currentRole = 'Guesser';
       let playerId = null;
 
-      document.getElementById('playWithFriendsBtn').addEventListener('click', () => {
-        document.getElementById('roomContainer').style.display = 'block';
-      });
-
       async function generateUniqueId() {
         let id = '_' + Math.random().toString(36).substr(2, 9);
 
@@ -326,28 +354,33 @@
 
         socket.emit('storePlayerId', playerId);
 
-        document.getElementById('createRoomBtn').addEventListener('click', () => {
-          const roomName = document.getElementById('roomName').value;
-          socket.emit('createRoom', { roomName, playerId });
-          currentRoom = roomName;
-        });
-
-        document.getElementById('startGameBtn').addEventListener('click', () => {
-          if (currentRoom && currentRole === 'Drawer') {
-            socket.emit('startGame', currentRoom);
-          }
-        });
+        socket.emit('getRooms');
 
         socket.on('roomsList', (rooms) => {
+          console.log(rooms);
+          if (inRoom) {
+            return;
+          }
+
           const roomList = document.getElementById('roomList');
+
+          if (!roomList) {
+            return;
+          }
+
           roomList.innerHTML = '';
-          rooms.forEach((room) => {
+          Object.keys(rooms).forEach((room) => {
+            if (rooms[room].gameStarted) {
+              return;
+            }
+            
             const li = document.createElement('li');
             li.textContent = room;
             li.style.cursor = 'pointer';
             li.addEventListener('click', () => {
               socket.emit('joinRoom', { roomName: room, playerId });
               currentRoom = room;
+              inRoom = true;
             });
             roomList.appendChild(li);
           });
@@ -366,9 +399,9 @@
         socket.on('updateRole', (role) => {
           currentRole = role;
           if (role === 'Drawer') {
-            document.getElementById('startGameBtn').style.display = 'block';
+            document.getElementById('btn-container').style.display = 'block';
           } else {
-            document.getElementById('startGameBtn').style.display = 'none';
+            document.getElementById('btn-container').style.display = 'none';
           }
         });
 
@@ -377,8 +410,12 @@
           window.location.href = `public/game.html?room=${currentRoom}&playerId=${playerId}`;
         });
 
+        socket.on('roomExists', () => {
+          alert('Room already exists.');
+        });
+
         socket.on('roomFull', () => {
-          alert('Room is full');
+          alert('Room is full. Please try another room.');
         });
       })();
     </script>

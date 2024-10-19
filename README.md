@@ -1,19 +1,6 @@
-# three_vite
-Basic THREE.js template using [Vite](https://vitejs.dev).
+# my-threejs-webxr-drawing
 
-Allows testing and modifying [official THREE.js examples](https://threejs.org/examples/) locally, at lightning speed.
-After trying Parcel and Rollup, this is probably the most developer-friendly to start THREE.js development in 2023 : it's insanely fast, it supports live reload out of the box, while remaining simple to use and to extend.
-
-## Batteries included
-
-Pre-configured to support :
-
-- glTF file loading
-- ammo.js wasm physics library
-- VSCode launch scripts
-- THREE.js type definitions : for IntelliSense in VS Code
-
-Have a look at vite.config.js and customize it to your needs (additional libraries, file formats etc.).
+This project is an Anatomy Pictionary. You can play "solo" where you only need your pc to draw and people around can try to guess. You can also "play with friends", but the website is only hosted on GitHub, which doesn't offer a Node.js server. All you'd have to do is find a host so that everyone can play. However, you can still test this fully functional mode on your own computer. 
 
 ## Installation
 
@@ -22,67 +9,38 @@ Install [Node.js](https://nodejs.org)
 - Clone or download repo
 - run `npm install` : fetches and install all dependencies
 - `npm run build` : packages all code and resources into the `dist` folder
-- `npm run dev` : launches a server and opens your browser in `https://localhost:5173` by default
-- Edit your code : your changes are reflected instantly!
 
-## HTTPS
+## Usage
 
-HTTPS is required to use some features such as the WebXR API
-
-
-### Using Cloudflare Tunnel for free without a domain (recommended)
-
-  - Install [Homebrew](https://brew.sh)
-
+1. Ensure you have Node.js installed. You can download it from [nodejs.org](https://nodejs.org/).
+2. Open your terminal and navigate to the project directory.
 ```bash
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-then follow instructions
-
-
-```bash
-echo >> /Users/XXX/.zprofile
-
-echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/XXX/.zprofile
-
-eval "$(/opt/homebrew/bin/brew shellenv)"
-```
-
-  - **[Install `cloudflared`](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)**
-
-```bash
-brew install cloudflared
-```
-- run your app locally
-
-```bash
+node server.js
 npm run dev
 ```
 
-- run `cloudflared` tunnel
+4. Open your web browser and go to `http://localhost:5173` to see the application in action.
 
-```bash
-cloudflared --url http://localhost:5173/
-```
+## Features
 
-This will create a random temporary address ending in `*.trycloudflare.com`
+- **Solo Mode**: Draw on your own and let others guess.
+- **Multiplayer Mode**: Play with friends by hosting the server on your own machine.
 
-You can share this address by sending a link or by generating a QR code (very useful for mobile devices and some XR headsets).
+## Contributing
 
-### Persistent link
+1. Fork the repository.
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
 
-If you want more persistence, you should register a domain name, or connect your github account to [Cloudflare Pages](https://pages.cloudflare.com) for free.
+## License
 
-Alternatively, you could simply [use GitHub Pages to host your application persistently](https://sbcode.net/threejs/github-pages/).
+Distributed under the MIT License. See `LICENSE` for more information.
 
-### Tunneling alternatives
+## Contact
 
-Check these tunneling alternatives such as `ngrok` or `zrok` for simple personal projects, use [tunneling solutions](https://github.com/anderspitman/awesome-tunneling) 
+Nathan - [Your Email](mailto:nathan.labernardiere@epita.fr)
+Mathieu - [Your Email](mailto:mathieu.cimolai@epita.fr)
 
-
-### Manual HTTPS setup
-
-In order to use `https`, copy your certificates to the `.cert` folder, and change the `serve` command to:
-
-`"serve": "http-server dist -S -C .cert/cert.pem -K .cert/key.pem`
+Project Link: [GitHub Repository](https://github.com/your-username/my-threejs-webxr-drawing)
