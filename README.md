@@ -1,6 +1,6 @@
 # my-threejs-webxr-drawing
 
-This project is an Anatomy Pictionary. You can play "solo" where you only need your pc to draw and people around can try to guess. You can also "play with friends", but the project isn't hosted somewhere. All you'd have to do is find a host so that everyone can play. However, you can still test this fully functional mode on your own computer.
+This project is an Anatomy Pictionary. You can play "solo" where you only need your pc to draw and people around can try to guess. You can also "play with friends", but the project isn't hosted somewhere. All you'd have to do is find a host so that everyone can play. However, you can still test this fully functional mode on your own computer or with people on the same network.
 
 ## Installation
 
@@ -18,6 +18,7 @@ Install [Node.js](https://nodejs.org)
 node server.js
 npm run dev
 ```
+3. To play with people on the same network you have to replace the VITE_SERVER_HOST variable with your ip adress in the serverConfig.env file at the root of the project
 
 4. Open your web browser and go to `http://localhost:5173` to see the application in action.
 

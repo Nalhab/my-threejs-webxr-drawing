@@ -3,27 +3,33 @@ import http from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: `http://${process.env.VITE_SERVER_HOST}:${process.env.VITE_CLIENT_PORT}`,
+    methods: ["GET", "POST"]
+  }
+});
 
 const rooms = {};
 
+// REPLACE THIS WITH YOUR IP ADDRESS
+app.use(cors({ origin: `http://${process.env.VITE_SERVER_HOST}:${process.env.VITE_CLIENT_PORT}` }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 io.on('connection', (socket) => {
   console.log('New client connected');
 
-  // Fonctionality to store the player ids connected on the website
   socket.on('storePlayerId', (playerId) => {
     socket.playerId = playerId;
   });
 
-  // Functionality to get all players ids connected on the website
   socket.on('getPlayersIds', () => {
     const playersIds = [];
     io.sockets.sockets.forEach((s) => {
@@ -32,7 +38,6 @@ io.on('connection', (socket) => {
     socket.emit('playersIds', playersIds);
   });
 
-  // get the player id
   socket.on('getPlayerId', () => {
     io.emit('playerId', socket.playerId);
   });
@@ -42,16 +47,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on('createRoom', ({ roomName, playerId }) => {
-    // Check if the player is already in a room
     for (const existingRoomName in rooms) {
       const playerIndex = rooms[existingRoomName].players.findIndex(player => player.id === playerId);
       if (playerIndex !== -1) {
-        // If the player is the Drawer, delete the old room
         if (rooms[existingRoomName].players[playerIndex].role === 'Drawer') {
           delete rooms[existingRoomName];
           io.emit('roomsList', rooms);
         } else {
-          // If the player is not the Drawer, just remove them from the room
           rooms[existingRoomName].players.splice(playerIndex, 1);
           io.to(existingRoomName).emit('roomData', rooms[existingRoomName].players);
         }
@@ -60,17 +62,14 @@ io.on('connection', (socket) => {
       }
     }
 
-    // Check if the room name already exists
     if (rooms[roomName]) {
       socket.emit('roomExists');
       return;
     }
 
-    // Create the new room
     rooms[roomName] = { players: [], gameStarted: false };
     io.emit('roomsList', rooms);
 
-    // Add the player to the new room as the Drawer
     socket.join(roomName);
     rooms[roomName].players.push({ id: playerId, role: 'Drawer', socketId: socket.id });
     io.to(roomName).emit('roomData', rooms[roomName].players);
@@ -133,14 +132,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    const isfromIndex = socket.handshake.headers.referer.includes('index.html');
-    console.log(socket.handshake.headers.referer);
-    console.log(isfromIndex);
+    const isfromIndex = !socket.handshake.headers.referer.includes('game.html');
 
-    //verify if the game was started
     for (const roomName in rooms) {
-      if (!rooms[roomName].gameStarted) {
-        rooms[roomName].players = rooms[roomName].players.filter(player => player.socketId !== socket.id);
+      if (!rooms[roomName].gameStarted && socket.playerId) {
+        rooms[roomName].players = rooms[roomName].players.filter(player => {
+          return player.id !== socket.playerId;
+        });
         if (rooms[roomName].players.length === 0) {
           delete rooms[roomName];
         }
@@ -150,13 +148,11 @@ io.on('connection', (socket) => {
     }
 
     if (isfromIndex) {
-      console.log('Client disconnected');
       return
     }
 
     for (const roomName in rooms) {
       rooms[roomName].players = rooms[roomName].players.filter(player => player.socketId !== socket.id);
-      console.log(rooms[roomName].players);
       delete rooms[roomName];
       io.emit('roomsList', rooms);
       io.to(roomName).emit('gameEnded');
@@ -166,6 +162,9 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log('Server is running on port 3000');
+const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0';
+
+server.listen(PORT, HOST, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

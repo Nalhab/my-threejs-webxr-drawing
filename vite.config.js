@@ -9,9 +9,11 @@ export default defineConfig({
     },
     server: {
         open: false,
+        host: '0.0.0.0',
+        port: parseInt(process.env.VITE_CLIENT_PORT, 10) || 5173,
         proxy: {
             '/socket.io': {
-                target: 'http://localhost:3000',
+                target: `http://${process.env.VITE_SERVER_HOST}:${process.env.VITE_SERVER_PORT}`,
                 ws: true
             }
         }

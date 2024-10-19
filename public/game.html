@@ -184,7 +184,8 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        const socket = io();
+        // REPLACE THIS WITH YOUR IP ADDRESS
+        const socket = io(`http://${import.meta.env.VITE_SERVER_HOST}:${import.meta.env.VITE_SERVER_PORT}`);
         const urlGameParams = new URLSearchParams(window.location.search);
         const room = urlGameParams.get('room');
         const playerId = urlGameParams.get('playerId');

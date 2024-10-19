@@ -327,7 +327,8 @@
       tick();
       animate();
 
-      const socket = io();
+      // REPLACE THIS WITH YOUR IP ADDRESS
+      const socket = io(`http://${import.meta.env.VITE_SERVER_HOST}:${import.meta.env.VITE_SERVER_PORT}`);
       let currentRoom = null;
       let currentRole = 'Guesser';
       let playerId = null;
@@ -357,7 +358,6 @@
         socket.emit('getRooms');
 
         socket.on('roomsList', (rooms) => {
-          console.log(rooms);
           if (inRoom) {
             return;
           }
