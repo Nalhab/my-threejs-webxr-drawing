@@ -1,6 +1,13 @@
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import glsl from 'vite-plugin-glsl';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const serverHost = process.env.VITE_SERVER_HOST || '0.0.0.0';
+const serverPort = process.env.VITE_SERVER_PORT || 3000;
+const clientPort = process.env.VITE_CLIENT_PORT || 5173;
 
 export default defineConfig({
     clearScreen: false,
@@ -10,14 +17,15 @@ export default defineConfig({
     server: {
         open: false,
         host: '0.0.0.0',
-        port: parseInt(process.env.VITE_CLIENT_PORT, 10) || 5173,
+        port: clientPort,
         proxy: {
-            '/socket.io': {
-                target: `http://${process.env.VITE_SERVER_HOST}:${process.env.VITE_SERVER_PORT}`,
-                ws: true
-            }
+          '/api': {
+            target: `http://${serverHost}:${serverPort}`,
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api/, '')
+          }
         }
-    },
+      },
     plugins: [
         viteStaticCopy({
           targets: [

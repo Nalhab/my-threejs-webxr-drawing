@@ -184,11 +184,25 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/controls/OrbitControls.js"></script>
 
     <script type="module">
-        const socket = io(`http://${import.meta.env.VITE_SERVER_HOST}:${import.meta.env.VITE_SERVER_PORT}`, {
+        function getSocketServerUrl() {
+            const hostname = window.location.hostname;
+            const serverHost = import.meta.env.VITE_SERVER_HOST;
+            const serverPort = import.meta.env.VITE_SERVER_PORT;
+
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            return `http://localhost:${serverPort}`;
+            } else {
+            return `http://${serverHost}:${serverPort}`;
+            }
+        }
+
+        const socketServerUrl = getSocketServerUrl();
+        const socket = io(socketServerUrl, {
             query: {
-                page: window.location.pathname
+            page: window.location.pathname
             }
         });
+        
         const urlGameParams = new URLSearchParams(window.location.search);
         const room = urlGameParams.get('room');
         const playerId = urlGameParams.get('playerId');

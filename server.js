@@ -12,8 +12,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+const whitelist = [
+  `http://${process.env.VITE_SERVER_HOST}:${process.env.VITE_CLIENT_PORT}`,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+];
+
 const corsOptions = {
-  origin: `http://${process.env.VITE_SERVER_HOST}:${process.env.VITE_CLIENT_PORT}`,
+  origin: (origin, callback) => {
+    if (!origin || whitelist.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   optionsSuccessStatus: 200
 };
 
@@ -23,7 +36,13 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: `http://${process.env.VITE_SERVER_HOST}:${process.env.VITE_CLIENT_PORT}`,
+    origin: (origin, callback) => {
+      if (!origin || whitelist.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST']
   }
 });

@@ -27,6 +27,36 @@ npm run dev
 - **Solo Mode**: Draw on your own and let others guess.
 - **Multiplayer Mode**: Play with friends by hosting the server on your own machine.
 
+### Socket Events for Multiplayer Mode
+
+The following is a list of socket events handled for the multiplayer mode:
+
+1. **Connection Events**:
+   - `connection`: Triggered when a new client connects to the server.
+   - `disconnect`: Triggered when a client disconnects from the server.
+
+2. **Room Management**:
+   - `joinRoom`: Allows a client to join a specific room.
+     - **Parameters**: `roomName` (string) - The name of the room to join.
+   - `leaveRoom`: Allows a client to leave a specific room.
+     - **Parameters**: `roomName` (string) - The name of the room to leave.
+   - `roomsList`: Emits the list of all available rooms to the clients.
+
+3. **Player Management**:
+   - `storePlayerId`: Stores the player's ID in the socket.
+     - **Parameters**: `playerId` (string) - The ID of the player.
+   - `getPlayersIds`: Requests the list of player IDs in the current room.
+   - `playerData`: Emits the role and other data of the player to the client.
+     - **Parameters**: `data` (object) - The data of the player including role.
+
+4. **Game Events**:
+   - `gameStarted`: Notifies clients that the game has started.
+   - `gameEnded`: Notifies clients that the game has ended.
+   - `draw`: Sends drawing data to all clients in the room.
+     - **Parameters**: `data` (object) - The drawing data including position, color, and layer.
+   - `nextLayer`: Notifies clients to move to the next drawing layer.
+   - `previousLayer`: Notifies clients to move to the previous drawing layer.
+
 ## Contributing
 
 1. Fork the repository.
