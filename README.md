@@ -38,8 +38,6 @@ The following is a list of socket events handled for the multiplayer mode:
 2. **Room Management**:
    - `joinRoom`: Allows a client to join a specific room.
      - **Parameters**: `roomName` (string) - The name of the room to join.
-   - `leaveRoom`: Allows a client to leave a specific room.
-     - **Parameters**: `roomName` (string) - The name of the room to leave.
    - `roomsList`: Emits the list of all available rooms to the clients.
 
 3. **Player Management**:

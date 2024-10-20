@@ -186,8 +186,8 @@
     <script type="module">
         function getSocketServerUrl() {
             const hostname = window.location.hostname;
-            const serverHost = import.meta.env.VITE_SERVER_HOST;
-            const serverPort = import.meta.env.VITE_SERVER_PORT;
+            const serverHost = import.meta.env.VITE_SERVER_HOST || hostname;
+            const serverPort = import.meta.env.VITE_SERVER_PORT || 3000;
 
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
             return `http://localhost:${serverPort}`;
@@ -202,7 +202,7 @@
             page: window.location.pathname
             }
         });
-        
+
         const urlGameParams = new URLSearchParams(window.location.search);
         const room = urlGameParams.get('room');
         const playerId = urlGameParams.get('playerId');
