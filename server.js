@@ -4,24 +4,31 @@ import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const corsOptions = {
+  origin: `http://${process.env.VITE_SERVER_HOST}:${process.env.VITE_CLIENT_PORT}`,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
 const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
     origin: `http://${process.env.VITE_SERVER_HOST}:${process.env.VITE_CLIENT_PORT}`,
-    methods: ["GET", "POST"]
+    methods: ['GET', 'POST']
   }
 });
 
 const rooms = {};
-
-// REPLACE THIS WITH YOUR IP ADDRESS
-app.use(cors({ origin: `http://${process.env.VITE_SERVER_HOST}:${process.env.VITE_CLIENT_PORT}` }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 io.on('connection', (socket) => {
   console.log('New client connected');
@@ -106,6 +113,7 @@ io.on('connection', (socket) => {
       const player = room.find(p => p.id === playerId);
       if (player) {
         socket.join(roomName);
+        socket.playerId = playerId;
         socket.emit('playerData', { role: player.role });
       }
     }
@@ -132,37 +140,43 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    const isfromIndex = !socket.handshake.headers.referer.includes('game.html');
-
-    for (const roomName in rooms) {
-      if (!rooms[roomName].gameStarted && socket.playerId) {
-        rooms[roomName].players = rooms[roomName].players.filter(player => {
-          return player.id !== socket.playerId;
-        });
-        if (rooms[roomName].players.length === 0) {
-          delete rooms[roomName];
-        }
-        io.emit('roomsList', rooms);
-        io.to(roomName).emit('roomData', rooms[roomName]?.players || []);
-      }
-    }
+    const isfromIndex = !socket.handshake.query.page.includes('game.html');
 
     if (isfromIndex) {
-      return
+      for (const roomName in rooms) {
+        if (!rooms[roomName].gameStarted && socket.playerId) {
+          rooms[roomName].players = rooms[roomName].players.filter(player => {
+            return player.id !== socket.playerId;
+          });
+          if (rooms[roomName].players.length === 0) {
+            delete rooms[roomName];
+          }
+          io.emit('roomsList', rooms);
+          io.to(roomName).emit('roomData', rooms[roomName]?.players || []);
+        }
+      }
+
+      return;
     }
 
     for (const roomName in rooms) {
-      rooms[roomName].players = rooms[roomName].players.filter(player => player.socketId !== socket.id);
-      delete rooms[roomName];
+      const size = rooms[roomName].players.length;
+      rooms[roomName].players = rooms[roomName].players.filter(player => {
+        return player.id !== socket.playerId;
+      }); 
+      
       io.emit('roomsList', rooms);
-      io.to(roomName).emit('gameEnded');
-      io.to(roomName).emit('roomData', rooms[roomName]?.players || []);
+
+      if (size !== rooms[roomName].players.length) {
+        delete rooms[roomName];
+        io.to(roomName).emit('gameEnded');
+      }
     }
     console.log('Client disconnected');
   });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.VITE_SERVER_PORT || 3000;
 const HOST = '0.0.0.0';
 
 server.listen(PORT, HOST, () => {

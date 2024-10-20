@@ -18,7 +18,7 @@ Install [Node.js](https://nodejs.org)
 node server.js
 npm run dev
 ```
-3. To play with people on the same network you have to replace the VITE_SERVER_HOST variable with your ip adress in the serverConfig.env file at the root of the project
+3. To play with people on the same network you have to replace the VITE_SERVER_HOST variable with your ip adress in the .env file at the root of the project
 
 4. Open your web browser and go to `http://localhost:5173` to see the application in action.
 

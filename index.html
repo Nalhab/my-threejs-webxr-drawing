@@ -327,8 +327,11 @@
       tick();
       animate();
 
-      // REPLACE THIS WITH YOUR IP ADDRESS
-      const socket = io(`http://${import.meta.env.VITE_SERVER_HOST}:${import.meta.env.VITE_SERVER_PORT}`);
+      const socket = io(`http://${import.meta.env.VITE_SERVER_HOST}:${import.meta.env.VITE_SERVER_PORT}`, {
+        query: {
+          page: window.location.pathname
+        }
+      });
       let currentRoom = null;
       let currentRole = 'Guesser';
       let playerId = null;

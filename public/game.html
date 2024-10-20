@@ -183,9 +183,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/js/controls/OrbitControls.js"></script>
 
-    <script>
-        // REPLACE THIS WITH YOUR IP ADDRESS
-        const socket = io(`http://${import.meta.env.VITE_SERVER_HOST}:${import.meta.env.VITE_SERVER_PORT}`);
+    <script type="module">
+        const socket = io(`http://${import.meta.env.VITE_SERVER_HOST}:${import.meta.env.VITE_SERVER_PORT}`, {
+            query: {
+                page: window.location.pathname
+            }
+        });
         const urlGameParams = new URLSearchParams(window.location.search);
         const room = urlGameParams.get('room');
         const playerId = urlGameParams.get('playerId');
@@ -259,7 +262,7 @@
             const geometry = new THREE.PlaneGeometry(100, 100);
             const distanceBetweenPlanes = 1;
 
-            material = new THREE.MeshBasicMaterial({
+            const material = new THREE.MeshBasicMaterial({
                         color: 0x87CEEB,
                         side: THREE.DoubleSide,
                         transparent: true,
@@ -351,18 +354,6 @@
                     if (!controlsEnabled)
                     {
                         if (event.button === 0) {
-                            // let mouse = new THREE.Vector2();
-                            // mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-                            // mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-                            // let raycaster = new THREE.Raycaster();
-                            // raycaster.setFromCamera(mouse, camera);
-
-                            // let intersects = raycaster.intersectObject(planes[currentPlane]);
-                            // if (intersects.length > 0) {
-                            //     let intersectPoint = intersects[0].point;
-                            //     addSphere(intersectPoint, currentColor);
-                            // }
                             isDrawing = true;
                             drawSphereContinuously(event);
                         }
@@ -381,7 +372,9 @@
                 lastDrawPosition = null;
                 if (event.button === 0 && currentTrace.length > 0) {
                     traces.push(currentTrace);
-                    socket.emit('addTrace', { roomName: room });
+                    if (isDrawer && mode !== 'solo') {
+                        socket.emit('addTrace', { roomName: room });
+                    }
                     currentTrace = [];
                 }
             });
@@ -459,7 +452,9 @@
                     addPlane();
                 }
 
-                socket.emit('nextLayer', { roomName: room });
+                if (isDrawer && mode !== 'solo') {
+                    socket.emit('nextLayer', { roomName: room });
+                }
                 currentPlane++;
                 updateNextLayerButton();
             });
@@ -469,7 +464,9 @@
                     currentPlane--;
                 }
 
-                socket.emit('previousLayer', { roomName: room });
+                if (isDrawer && mode !== 'solo') {
+                    socket.emit('previousLayer', { roomName: room });
+                }
                 updateNextLayerButton();
             });
 
@@ -480,7 +477,9 @@
                         scene.remove(sphere);
                         spheres = spheres.filter(s => s !== sphere);
                     });
-                    socket.emit('undo', { roomName: room, trace: lastTrace });
+                    if (isDrawer && mode !== 'solo') {
+                        socket.emit('undo', { roomName: room, trace: lastTrace });
+                    }
                 }
             });
 
@@ -514,6 +513,7 @@
 
             if (mode !== 'solo') {
                 socket.on('gameEnded', () => {
+                    // Will not trigger if the user hasn't the window focused
                     alert('Someone left. Redirecting to home page.');
                     window.location.href = '../index.html';
                 });
