@@ -160,6 +160,7 @@
     </script>
 </head>
 <body>
+    <audio id="bloopSound" src="bloop_sound.mp3"></audio>
     <div id="ui">
         <div id="top-row">
             <button id="toggleDrawMoveBtn" class="action-button button-container color">Draw mode</button>
@@ -314,9 +315,18 @@
             let isDrawing = false;
             let lastDrawPosition = null;
             const minDistance = 1;
+            let sphereCount = 0;
 
             let traces = [];
             let currentTrace = [];
+
+            function playBloopSound() {
+                const bloopSound = new Audio('bloop_sound.mp3');
+                bloopSound.volume = 0.1;
+                bloopSound.play().catch(error => {
+                    console.error('Error playing bloop sound:', error);
+                });
+            }
 
             function addSphere(position, color) {
                 let sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
@@ -326,6 +336,12 @@
                 scene.add(sphere);
                 spheres.push(sphere);
                 currentTrace.push(sphere);
+                sphereCount += 1;
+
+                // Avoid too many sounds
+                if (sphereCount % 3 === 0)
+                    playBloopSound();
+
                 return sphere;
             }
 

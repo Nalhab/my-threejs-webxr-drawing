@@ -30,6 +30,24 @@
     <div class="container">
       <canvas class="webgl"></canvas>
     </div>
+    <audio id="backgroundMusic" src="public/music.mp3" autoplay loop></audio>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        backgroundMusic.volume = 0.3;
+
+        function playBackgroundMusic() {
+          backgroundMusic.play().catch(error => {
+            console.error('Error playing background music:', error);
+          });
+          document.removeEventListener('click', playBackgroundMusic);
+          document.removeEventListener('keydown', playBackgroundMusic);
+        }
+
+        document.addEventListener('click', playBackgroundMusic);
+        document.addEventListener('keydown', playBackgroundMusic);
+      });
+    </script>
     <div id="progress-container">
       <div id="progress" style="font-family: Boogaloo;">Loading...</div>
     </div>
