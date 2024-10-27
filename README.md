@@ -23,7 +23,7 @@ npm run dev
 
 ## Alternative
 
-You can play without installing anything on this website : `https://nalhab.github.io/my-threejs-webxr-drawing/`, but as mentioned GitHub can not host a node server so all you can do on this link is the "solo" mode.
+You can play without installing anything on this website : `https://nalhab.github.io/my-threejs-webxr-drawing/`, but as mentioned GitHub can not host a node server so all you can do on this link is the "solo" mode. When entering the website you will have to wait a bit so your browser downloads all the needed resources.
 
 ## How to play
 
@@ -73,7 +73,7 @@ The following is a list of socket events handled for the multiplayer mode:
   
 ## Examples
 
-![Aperçu n°1 du projet](assets/image.png)
+![Aperçu n°1 du projet](public/image.png)
 
 ![Aperçu n°2 du projet](public/demo2.gif)
 
