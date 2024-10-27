@@ -1,6 +1,6 @@
 # my-threejs-webxr-drawing
 
-This project is an Anatomy Pictionary. You can play "solo" where you only need your pc to draw and people around can try to guess. You can also "play with friends", but the project isn't hosted somewhere. All you'd have to do is find a host so that everyone can play. However, you can still test this fully functional mode on your own computer or with people on the same network.
+This project is an Anatomy Pictionary. You can play "solo" where you only need your pc to draw and people around can try to guess. You can also "play with friends", but the project (multiplayer aspect) isn't hosted somewhere. All you'd have to do is find a host so that everyone can play. However, you can still test this fully functional mode on your own computer or with people on the same network.
 
 ## Installation
 
@@ -13,14 +13,30 @@ Install [Node.js](https://nodejs.org)
 ## Usage
 
 1. Ensure you have Node.js installed. You can download it from [nodejs.org](https://nodejs.org/).
-2. Open your terminal and navigate to the project directory.
+2. To play with people on the same network you have to replace the VITE_SERVER_HOST variable with your ip adress in the .env file at the root of the project
+3. Open your terminal and navigate to the project directory.
 ```bash
 node server.js
 npm run dev
 ```
-3. To play with people on the same network you have to replace the VITE_SERVER_HOST variable with your ip adress in the .env file at the root of the project
-
 4. Open your web browser and go to `http://localhost:5173` to see the application in action.
+
+## Alternative
+
+You can play without installing anything on this website : `https://nalhab.github.io/my-threejs-webxr-drawing/`, but as mentioned GitHub can not host a node server so all you can do on this link is the "solo" mode.
+
+## How to play
+
+On the play page (solo or with friends), you have differents options and possibilities to enhance your drawing experience:
+
+- **Draw Mode button**: Allows the user to switch between the draw mode and move mode, where in move mode the left clicks let the user moves in the scene instead of putting spheres.
+- **Next/Previous Layer button**: Allows the user to switch between the planes to add relief to the drawing.
+- **Hide Layers button**: Allows the user to hide all the planes to better see the drawing.
+- **Color Picker button**: A color picker to change the color of the spheres.
+- **Undo button**: Cancel the last trace of the drawer.
+- **Home button**: Use this button to get back the home page (stops the party if in multiplayer).
+
+The difference in multiplayer between the drawer and guessers is that guessers only have access to **Hide Layers button** and **Home button**.
 
 ## Features
 
@@ -54,6 +70,14 @@ The following is a list of socket events handled for the multiplayer mode:
      - **Parameters**: `data` (object) - The drawing data including position, color, and layer.
    - `nextLayer`: Notifies clients to move to the next drawing layer.
    - `previousLayer`: Notifies clients to move to the previous drawing layer.
+  
+## Examples
+
+![Aperçu n°1 du projet](assets/image.png)
+
+![Aperçu n°2 du projet](public/demo2.gif)
+
+![Aperçu n°3 du projet](public/demo1.gif)
 
 ## Contributing
 
