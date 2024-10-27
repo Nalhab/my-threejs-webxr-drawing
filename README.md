@@ -73,7 +73,7 @@ The following is a list of socket events handled for the multiplayer mode:
   
 ## Examples
 
-![Aperçu n°1 du projet](assets/image.png)
+![Aperçu n°1 du projet](public/image.png)
 
 ![Aperçu n°2 du projet](public/demo2.gif)
 
