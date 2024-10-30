@@ -42,7 +42,7 @@ The difference in multiplayer between the drawer and guessers is that guessers o
 
 - **Solo Mode**: Draw on your own and let others guess.
 - **Multiplayer Mode**: Play with friends by hosting the server on your own machine.
-- **Music**: There is music on the home page (browser may block autoplay so you have to click on the page to trigger it), there is also a sound when a sphere is placed.
+- **Music**: There is music on the home page (browser may block autoplay so you have to click on the page to trigger it), there is also a sound when a sphere is placed. Unfortunately, the music can only be loaded when hosting the project on your machine, it doesn't work with GitHub Pages.
 
 ### Socket Events for Multiplayer Mode
 
