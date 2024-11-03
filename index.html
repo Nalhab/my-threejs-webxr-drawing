@@ -30,7 +30,7 @@
     <div class="container">
       <canvas class="webgl"></canvas>
     </div>
-    <audio id="backgroundMusic" src="public/music.mp3" autoplay loop></audio>
+    <audio id="backgroundMusic" src="./public/music.mp3" autoplay loop></audio>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const backgroundMusic = document.getElementById('backgroundMusic');
@@ -142,6 +142,8 @@
       composer.addPass(effectFXAA);
       let label;
 
+      const canvas = document.querySelector('.webgl');
+
       loader.load('scene.gltf', (gltf) => {
         console.log('loading model');
         mesh = gltf.scene;
@@ -164,7 +166,13 @@
         mesh.position.y -= center.y * 2;
         mesh.position.z -= center.z;
 
-        mesh.scale.set(2.5, 2.5, 2.5);
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (isMobile) {
+          mesh.scale.set(2, 2, 2);
+        } else {
+          mesh.scale.set(2.5, 2.5, 2.5);
+        }
         mesh.rotation.set(0, 0, Math.PI / 10);
 
         group.add(mesh);
@@ -275,6 +283,9 @@
         document.getElementsByClassName('closeMulti')[0].addEventListener('click', () => {
           roomslist.style.display = 'none';
           inRoom = false;
+          document.getElementById('roomName').value = '';
+          document.getElementById('btn-container').classList.remove('show');
+          socket.emit('leaveRoom', { roomName: currentRoom, playerId: playerId });
         });
       }, (xhr) => {
         console.log(`loading ${xhr.loaded / xhr.total * 100}%`);
@@ -392,6 +403,17 @@
 
         socket.emit('getRooms');
 
+        socket.on('updateRoleRoomChanged', (data) => {
+          if (data.playerId === playerId) {
+            currentRole = data.role;
+            if (data.role === 'Drawer') {
+              document.getElementById('btn-container').classList.add('show');
+            } else {
+              document.getElementById('btn-container').classList.remove('show');
+            }
+          }
+        });
+
         socket.on('roomsList', (rooms) => {
           if (inRoom) {
             return;
@@ -434,9 +456,9 @@
         socket.on('updateRole', (role) => {
           currentRole = role;
           if (role === 'Drawer') {
-            document.getElementById('btn-container').style.display = 'block';
+            document.getElementById('btn-container').classList.add('show');
           } else {
-            document.getElementById('btn-container').style.display = 'none';
+            document.getElementById('btn-container').classList.remove('show');
           }
         });
 

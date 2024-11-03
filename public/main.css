@@ -119,6 +119,7 @@ body, html {
 	--background-color: #0045c6;
 	--background-color-dark: #002365;
 
+  text-align: center;
 	display: inline-block;
 	margin: 0 8px;
 	padding: 10px 16px;
@@ -160,6 +161,7 @@ body, html {
 	--background-color: #005aff;
 	--background-color-dark: #002d81;
 
+  text-align: center;
 	display: inline-block;
 	margin: 0 8px;
 	padding: 10px 16px;
@@ -295,4 +297,8 @@ body, html {
   cursor: pointer;
   background-color: #19E633;
   box-shadow: 6px 6px 0 #007d11;
+}
+
+.show {
+  display: block !important;
 }

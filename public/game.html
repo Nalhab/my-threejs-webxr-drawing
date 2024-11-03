@@ -50,6 +50,25 @@
             width: 150px;
             text-align: center;
         }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .action-button,
+        #colorPicker,
+        #toggleDrawMoveBtn,
+        #undoBtn,
+        #homeBtn,
+        #pageUpButton,
+        #pageDownButton,
+        #toggleLayersBtn {
+            pointer-events: auto;
+        }
 
         .color {
             --background-color: #0045c6;
@@ -92,7 +111,7 @@
         }
 
         .modal {
-            display: none; /* Masquer par défaut */
+            display: none;
             position: fixed;
             z-index: 1000;
             left: 0;
@@ -100,7 +119,7 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4); /* Fond semi-transparent */
+            background-color: rgba(0, 0, 0, 0.4);
         }
 
         .modal-content {
@@ -135,7 +154,6 @@
             margin-top: 10px;
         }
 
-        /* Styles pour le bouton Home */
         .home-button {
             display: flex;
             align-items: center;
@@ -264,6 +282,25 @@
                 RIGHT: THREE.MOUSE.ROTATE
             };
             camera.position.set(0, 60, 100);
+
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                if (!isDrawer) {
+                    controls.enableRotate = true;
+                    controls.touches = {
+                        ONE: THREE.TOUCH.ROTATE,
+                        TWO: THREE.TOUCH.DOLLY_PAN
+                    };
+                } else {
+                    controls.enableRotate = false;
+                    controls.touches = {
+                        ONE: THREE.TOUCH.ROTATE,
+                        TWO: THREE.TOUCH.DOLLY_PAN
+                    };
+                }
+            }
+
             controls.update();
 
             window.addEventListener('contextmenu', (event) => {
@@ -276,6 +313,80 @@
             let currentPlane = 0;
             const geometry = new THREE.PlaneGeometry(100, 100);
             const distanceBetweenPlanes = 1;
+            let lastDrawPosition = null;
+            const ongoingTouches = [];
+
+            function copyTouch(touch) {
+                return { identifier: touch.identifier, pageX: touch.pageX, pageY: touch.pageY };
+            }
+
+            function ongoingTouchIndexById(idToFind) {
+                for (let i = 0; i < ongoingTouches.length; i++) {
+                    if (ongoingTouches[i].identifier === idToFind) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            function handleStart(evt) {
+                if (evt.touches.length > 1) return;
+                evt.preventDefault();
+                currentTrace = [];
+            }
+
+            function handleMove(evt) {
+                if (document.getElementById('toggleDrawMoveBtn').textContent !== 'Draw mode' || evt.touches.length > 1 || !isDrawer) {
+                    return;
+                }
+
+                evt.preventDefault();
+                const touches = evt.changedTouches;
+                const touch = touches[0];
+                const mouse = new THREE.Vector2();
+                mouse.x = (touch.pageX / window.innerWidth) * 2 - 1;
+                mouse.y = -(touch.pageY / window.innerHeight) * 2 + 1;
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObject(planes[currentPlane]);
+                if (intersects.length > 0) {
+                    addSphere(intersects[0].point, currentColor);
+                    if (isDrawer && mode !== 'solo') {
+                        socket.emit('draw', { roomName: room, position: intersects[0].point, color: currentColor, layer: currentPlane });
+                    }
+                    lastDrawPosition = intersectPoint.clone();
+                }
+            }
+
+            function handleEnd(evt) {
+                evt.preventDefault();
+                if (currentTrace.length > 0) {
+                    traces.push(currentTrace);
+                    if (isDrawer && mode !== 'solo') {
+                        socket.emit('addTrace', { roomName: room });
+                    }
+                    currentTrace = [];
+                }
+            }
+
+            function startup() {
+                const canvas = renderer.domElement;
+                canvas.addEventListener("touchstart", handleStart);
+                canvas.addEventListener("touchmove", handleMove);
+                canvas.addEventListener("touchend", handleEnd);
+            }
+            
+            startup();
+
+            function toggleDrawMode(button) {
+                if (button.textContent === 'Draw mode') {
+                    button.textContent = 'Move mode';
+                    controls.enableRotate = true;
+                } else {
+                    button.textContent = 'Draw mode';
+                    controls.enableRotate = false;
+                }
+            }
 
             const material = new THREE.MeshBasicMaterial({
                         color: 0x87CEEB,
@@ -313,7 +424,6 @@
             scene.add(directionalLight);
 
             let isDrawing = false;
-            let lastDrawPosition = null;
             const minDistance = 1;
             let sphereCount = 0;
 
@@ -453,7 +563,10 @@
             document.getElementById('toggleDrawMoveBtn').addEventListener('click', (e) => {
                 const button = e.target;
 
-                if (button.textContent === 'Draw mode') {
+                if (isMobile) {
+                    toggleDrawMode(button);
+                }
+                else if (button.textContent === 'Draw mode') {
                     button.textContent = 'Move mode';
                     controlsEnabled = true;
                 } else {

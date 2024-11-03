@@ -72,6 +72,30 @@ io.on('connection', (socket) => {
     socket.emit('roomsList', rooms);
   });
 
+  socket.on('leaveRoom', ({ roomName, playerId }) => {
+    if (rooms[roomName]) {
+      const playerIndex = rooms[roomName].players.findIndex(player => player.id === playerId);
+      if (playerIndex !== -1) {
+        const leavingPlayer = rooms[roomName].players[playerIndex];
+        rooms[roomName].players.splice(playerIndex, 1);
+        socket.leave(roomName);
+
+        if (leavingPlayer.role === 'Drawer' && rooms[roomName].players.length > 0) {
+          rooms[roomName].players[0].role = 'Drawer';
+          io.to(roomName).emit('updateRoleRoomChanged', { playerId: rooms[roomName].players[0].id, role: 'Drawer' });
+        }
+
+        io.to(roomName).emit('roomData', rooms[roomName].players);
+      }
+
+      if (rooms[roomName].players.length === 0) {
+        delete rooms[roomName];
+      }
+    }
+
+    socket.emit('roomsList', rooms);
+  });
+
   socket.on('createRoom', ({ roomName, playerId }) => {
     for (const existingRoomName in rooms) {
       const playerIndex = rooms[existingRoomName].players.findIndex(player => player.id === playerId);
