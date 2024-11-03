@@ -23,7 +23,7 @@ npm run dev
 
 ## Alternative
 
-You can play without installing anything on this website : ![https://nalhab.github.io/my-threejs-webxr-drawing/](https://nalhab.github.io/my-threejs-webxr-drawing/), but as mentioned GitHub can not host a node server so all you can do on this link is the "solo" mode. When entering the website you will have to wait a bit so your browser downloads all the needed resources.
+You can play without installing anything on this website : [https://nalhab.github.io/my-threejs-webxr-drawing/](https://nalhab.github.io/my-threejs-webxr-drawing/), but as mentioned GitHub can not host a node server so all you can do on this link is the "solo" mode. When entering the website you will have to wait a bit so your browser downloads all the needed resources.
 
 ## How to play
 
