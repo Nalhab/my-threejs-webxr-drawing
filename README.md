@@ -42,7 +42,7 @@ The difference in multiplayer between the drawer and guessers is that guessers o
 
 - **Solo Mode**: Draw on your own and let others guess.
 - **Multiplayer Mode**: Play with friends by hosting the server on your own machine.
-- **Music**: There is music on the home page (browser may block autoplay so you have to click on the page to trigger it), there is also a sound when a sphere is placed. Unfortunately, the music can only be loaded when hosting the project on your machine, it doesn't work with GitHub Pages.
+- **Music**: There is music on the home page (browser may block autoplay so you have to click on the page to trigger it), there is also a sound when a sphere is placed.
 
 ### Socket Events for Multiplayer Mode
 
@@ -56,6 +56,7 @@ The following is a list of socket events handled for the multiplayer mode:
    - `joinRoom`: Allows a client to join a specific room.
      - **Parameters**: `roomName` (string) - The name of the room to join.
    - `roomsList`: Emits the list of all available rooms to the clients.
+   - `leaveRoom`: Handle when a player leave a room to update the rooms and roles if necessary.
 
 3. **Player Management**:
    - `storePlayerId`: Stores the player's ID in the socket.
@@ -87,6 +88,10 @@ The following is a list of socket events handled for the multiplayer mode:
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
 4. Push to the branch (`git push origin feature/AmazingFeature`).
 5. Open a Pull Request.
+
+## Credits
+
+This project uses  free models from SketchFab and musics from Mixkit.
 
 ## License
 
