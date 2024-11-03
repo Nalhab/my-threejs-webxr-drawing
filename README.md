@@ -1,6 +1,6 @@
 # my-threejs-webxr-drawing
 
-This project is an Anatomy Pictionary. You can play "solo" where you only need your pc to draw and people around can try to guess. You can also "play with friends", but the project (multiplayer aspect) isn't hosted somewhere. All you'd have to do is find a host so that everyone can play. However, you can still test this fully functional mode on your own computer or with people on the same network.
+This project is an Anatomy Pictionary. You can play "solo" where you only need your pc to draw and people around can try to guess. You can also "play with friends", but the project (multiplayer aspect) isn't hosted somewhere. All you'd have to do is find a host so that everyone can play. However, you can still test this fully functional mode on your own computer or with people on the same network. This project is also cross-platform between pc and phones.
 
 ## Installation
 
